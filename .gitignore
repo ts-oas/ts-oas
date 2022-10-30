@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.vscode/
+.history/
+test/*.js
+test/*.d.ts
+test/*.map
+
+package-lock.json
+yarn.lock
+npm-debug.log
+yarn-error.log
+
+.idea
+*~
+.#*
+.DS_Store
