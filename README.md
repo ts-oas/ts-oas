@@ -6,24 +6,24 @@ Automatically transforms Typescript types into OpenAPI specifications. Needs int
 
 -   Write once, use many. Typescript is one of the most fluent ways to declare API specifications. Using `ts-oas`, we are able to utilize the generated specs for not only the documentations, also input validations (eg. ajv), serializing, testing and more.
 -   Automation first. Simply write a script and regenerate specs accordingly after making any change in types.
--   Headless. Works with any framework, unlike some other tools.
+-   Headless. Works with any server-side framework, unlike some other tools.
 
 ## Features
 
 -   Supports JSDoc annotations. Using pre-defined and user-defined keywords, meta-data can be included in every schema objects.
 -   Reference schemas and components. Schema references can be generated and addressed in accord with their correspond type references.
--   Schema processor for any desired post-process (if JSDoc isn't enough).
+-   Schema processor function for any desired post-process (if JSDoc isn't enough).
 -   Generate schemas separately.
 
 ## Install
 
 ```
-npm install ts-oas
+npm i ts-oas
 ```
 
 ## Getting Started
 
-Firstly, We need types for each API, with below format:
+Firstly, We need types for each API, compatible with below format:
 
 ```ts
 type Api = {
@@ -75,6 +75,9 @@ export type AddBarAPI = ApiMapper<{
 }>;
 
 export type Bar = {
+    /**
+     * Description for barName.
+     */
     barName: string;
     barType: "one" | "two";
 };
@@ -122,9 +125,75 @@ console.log(schema);
 
 ## Documentations
 
+### JSDoc annotations
+
+| Keyword                                                        | Fields  | Examples                                                                                                     |
+| -------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------ |
+| @default                                                       | any     | `@default foo` `@default 3` `@default ["a", "b", "c"]`                                                       |
+| @format                                                        | strings | `@format email`                                                                                              |
+| @items                                                         | arrays  | `@items.minimum 1` `@items.format email` `@items {"type":"integer", "minimum":0}` `@default ["a", "b", "c"]` |
+| @ref                                                           | any     | `@ref http://my-schema.org`                                                                                  |
+| @title                                                         | any     | `@title foo`                                                                                                 |
+| @minimum<br>@maximum<br>@exclusiveMinimum<br>@exclusiveMaximum | numbers | `@minimum 10` `@maximum 100`                                                                                 |
+| @minLength<br>@maxLength                                       | strings | `@minLength 10` `@maxLength 100`                                                                             |
+| @minItems<br>@maxItems                                         | arrays  | `@minItems 10` `@maxItems 100`                                                                               |
+| @minProperties<br>@maxProperties                               | objects | `@minProperties 10` `@maxProperties 100`                                                                     |
+| @additionalProperties                                          | objects | `@additionalProperties`                                                                                      |
+| @ignore                                                        | any     | `@ignore`                                                                                                    |
+| @pattern                                                       | strings | `@pattern /^[0-9a-z]+$/g`                                                                                    |
+| @example                                                       | any     | `@example foo` `@example {"abc":true}` `@example require('./examples.ts').myExampleConst`                    |
+| @examples                                                      | any     | `@example ["foo", "bar"]` `@example require('./examples.ts').myExampleArrayConst`                            |
+
+**Special keywords for root of API types**
+
+@summary @operationId @tags @hide @body.description @body.contentType
+
+<details><summary>Example</summary>
+
+```ts
+/**
+ * Sample description.
+ * @summary Summary of Endpoint
+ * @operationId addBar
+ * @tags foos,bars
+ * @hide
+ * @body.description Description for body of request.
+ * @body.contentType application/json
+ */
+export type AddBarAPI = ApiMapper<{
+    path: "/foo/bar";
+    method: "POST";
+    body: Bar;
+    responses: {
+        "201": {};
+    };
+}>;
+```
+
+</details>
+
+**Special keywords for response items**
+
+@contentType
+
+<details><summary>Example</summary>
+
+```ts
+    ...
+    responses: {
+        /**
+        * Description for response 200.
+        * @contentType application/json
+        */
+        "200": { success: true };
+    };
+```
+
+</details>
+
 ## Inspirations
 
-`ts-oas` is highly inspired by [typescript-json-schema](https://github.com/YousefED/typescript-json-schema). While using the so-called library, it tool a lot of workarounds to create compatible OpenAPI v3.0 specs. Plus, editing a schema enforced us to use schema-walker tools which added lots of overhead. So we came to add a schema-processor custom function option.
+`ts-oas` is highly inspired by [typescript-json-schema](https://github.com/YousefED/typescript-json-schema). While using the so-called library, it took a lot of workarounds to create compatible OpenAPI v3.0 specs. Plus, editing a schema enforced us to use schema-walker tools which added lots of overhead. So we came to add a schema-processor custom function option.
 
 Connecting Typescript types to serializer and validators to cut down the developing times, was the main purpose of developing this tool.
 

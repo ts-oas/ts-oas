@@ -60,12 +60,11 @@ export const validationKeywords = {
     // oneOf: true,                    // 6.28.
     // not: true,                      // 6.29.
 
+    example: true, 
     ignore: true,
     description: true,
     default: true,
-    $ref: true,
-    id: true,
-    $id: true,
+    ref: true,
     title: true
 };
 
