@@ -245,7 +245,7 @@ export class TypescriptOAS extends SchemaGenerator {
         return spec;
     }
 
-    public getSchemas(typeNames: (string | RegExp)[]): Definition {
+    public getSchemas(typeNames: (string | RegExp)[]): { [key: string]: Definition } {
         if (!typeNames || !typeNames.length) {
             return {};
         }
@@ -259,7 +259,7 @@ export class TypescriptOAS extends SchemaGenerator {
             }
         });
 
-        const root = {
+        const root: { [key: string]: Definition } = {
             definitions: {},
         };
 

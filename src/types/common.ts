@@ -1,5 +1,5 @@
 import * as ts from "typescript";
-import { JSONSchema7 } from "json-schema";
+import { IJsonSchema, OpenAPIV3 } from "openapi-types";
 import { HttpStatusCode } from "./enums/HttpStatusCode.enum";
 import { HTTPMethod } from "./enums/HTTPMethod.enum";
 
@@ -16,10 +16,6 @@ export type Options = {
      * @default false
      */
     titles?: boolean;
-    /**
-     * @default false
-     */
-    defaultProps?: boolean;
     /**
      * @default false
      */
@@ -55,47 +51,21 @@ export type Options = {
 export type PrimitiveType = number | boolean | string | null;
 
 export type MetaDefinitionFields = "ignore";
-type RedefinedFields =
-    | "type"
-    | "items"
-    | "properties"
-    | "additionalProperties"
-    | "if"
-    | "then"
-    | "else"
-    | "allOf"
-    | "anyOf"
-    | "oneOf"
-    | "not"
-    | "definitions";
-export type DefinitionOrBoolean = Definition | boolean;
-export interface Definition extends Omit<JSONSchema7, RedefinedFields> {
-    // The type field here is incompatible with the standard definition
+type RedefinedFields = "type" | "items" | "allOf" | "oneOf" | "anyOf" | "not" | "additionalProperties" | "properties";
+export interface Definition extends Omit<OpenAPIV3.BaseSchemaObject, RedefinedFields> {
     type?: string | string[];
-    nullable?: boolean;
-
-    // Non-standard fields
-    propertyOrder?: string[];
-    defaultProperties?: string[];
-    typeof?: "function";
-
-    // Fields that must be redefined because they make use of this definition itself
-    items?: DefinitionOrBoolean | DefinitionOrBoolean[];
+    items?: Definition | Definition[];
+    allOf?: Definition[];
+    oneOf?: Definition[];
+    anyOf?: Definition[];
+    not?: Definition;
+    additionalProperties?: Definition | boolean;
     properties?: {
-        [key: string]: DefinitionOrBoolean;
+        [name: string]: Definition;
     };
-    additionalProperties?: DefinitionOrBoolean;
-    if?: DefinitionOrBoolean;
-    then?: DefinitionOrBoolean;
-    else?: DefinitionOrBoolean;
-    allOf?: DefinitionOrBoolean[];
-    anyOf?: DefinitionOrBoolean[];
-    oneOf?: DefinitionOrBoolean[];
-    not?: DefinitionOrBoolean;
-    definitions?: {
-        [key: string]: DefinitionOrBoolean;
-    };
+    $ref?: string;
 }
+const abc: Definition = {};
 
 export type SymbolRef = {
     name: string;
@@ -103,7 +73,6 @@ export type SymbolRef = {
     fullyQualifiedName: string;
     symbol: ts.Symbol;
 };
-
 
 export type Api = {
     path: string;

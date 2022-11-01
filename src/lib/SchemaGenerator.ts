@@ -165,7 +165,6 @@ export class SchemaGenerator {
         return {
             ref: false,
             titles: false,
-            defaultProps: false,
             ignoreRequired: false,
             ignoreErrors: false,
             customKeywords: [],
@@ -808,10 +807,6 @@ export class SchemaGenerator {
 
             if (definition.type === "object" && Object.keys(propertyDefinitions).length > 0) {
                 definition.properties = propertyDefinitions;
-            }
-
-            if (this.args.defaultProps) {
-                definition.defaultProperties = [];
             }
 
             if (!this.args.ignoreRequired) {

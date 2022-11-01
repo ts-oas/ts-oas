@@ -65,6 +65,7 @@ export const validationKeywords = {
     description: true,
     default: true,
     ref: true,
+    $ref: true,
     title: true
 };
 
@@ -89,6 +90,5 @@ export const refKeywords: { [k in keyof typeof validationKeywords]?: true } = {
     description: true,
     default: true,
     examples: true,
-    // A JSDoc $ref annotation can appear as a $ref.
     $ref: true,
 };

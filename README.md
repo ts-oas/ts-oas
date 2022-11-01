@@ -1,5 +1,7 @@
 # Typescript OpenAPI Spec Generator
 
+[![npm version](https://img.shields.io/npm/v/ts-oas.svg)](https://www.npmjs.com/package/ts-oas)
+
 Automatically transforms Typescript types into OpenAPI specifications. Needs interfaces/types in a particular format.
 
 ## Benenfits
@@ -132,7 +134,7 @@ console.log(schema);
 | @default                                                       | any     | `@default foo` `@default 3` `@default ["a", "b", "c"]`                                                       |
 | @format                                                        | strings | `@format email`                                                                                              |
 | @items                                                         | arrays  | `@items.minimum 1` `@items.format email` `@items {"type":"integer", "minimum":0}` `@default ["a", "b", "c"]` |
-| @ref                                                           | any     | `@ref http://my-schema.org`                                                                                  |
+| @$ref                                                          | any     | `@ref http://my-schema.org`                                                                                  |
 | @title                                                         | any     | `@title foo`                                                                                                 |
 | @minimum<br>@maximum<br>@exclusiveMinimum<br>@exclusiveMaximum | numbers | `@minimum 10` `@maximum 100`                                                                                 |
 | @minLength<br>@maxLength                                       | strings | `@minLength 10` `@maxLength 100`                                                                             |
