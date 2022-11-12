@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/ts-oas.svg)](https://www.npmjs.com/package/ts-oas)
 
-Automatically transforms Typescript types into OpenAPI specifications. Needs interfaces/types in a particular format.
+Automatically transforms Typescript types into OpenAPI (formerly Swagger) specifications. Needs interfaces/types in a particular format.
 
 ## Benenfits
 
@@ -25,7 +25,7 @@ npm i ts-oas
 
 ## Getting Started
 
-Firstly, We need types for each API, compatible with below format:
+Firstly, We need types for each API, compatible with the following format:
 
 ```ts
 type Api = {

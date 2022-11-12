@@ -1,0 +1,165 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "OpenAPI specification", "version": "1.0.0" },
+  "components": {
+    "schemas": {
+      "GetAllBooksQuery": {
+        "type": "object",
+        "properties": {
+          "query-status": {
+            "thisIsCustom": "value",
+            "type": "array",
+            "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
+          }
+        }
+      },
+      "Record<string,string>": { "type": "object" },
+      "Book": {
+        "type": "object",
+        "properties": {
+          "id": { "description": "this is id.", "type": "number" },
+          "title": { "default": "sample title", "type": "string" },
+          "date": { "format": "date", "type": "string" },
+          "meta-data": { "$ref": "#/components/schemas/Record<string,string>" },
+          "statuses": { "type": "array", "items": { "enum": ["four", "one", "three", "two"], "type": "string" } }
+        },
+        "required": ["id", "meta-data", "statuses", "title"]
+      },
+      "GetAllBooksQueryRes": { "type": "array", "items": { "$ref": "#/components/schemas/Book" } },
+      "ResponseUnsuccessData": {
+        "type": "object",
+        "properties": { "msg": { "type": "string", "enum": ["This is unsuccess."] } },
+        "required": ["msg"]
+      },
+      "EditBookQuery": {
+        "type": "object",
+        "properties": {
+          "another_field": { "type": "string" },
+          "query-status": {
+            "thisIsCustom": "value",
+            "type": "array",
+            "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
+          }
+        },
+        "required": ["another_field"]
+      },
+      "EditBookRes": {
+        "type": "object",
+        "properties": {
+          "id": { "description": "this is id.", "type": "number" },
+          "title": { "default": "sample title", "type": "string" },
+          "date": { "format": "date", "type": "string" },
+          "meta-data": { "$ref": "#/components/schemas/Record<string,string>" },
+          "statuses": { "type": "array", "items": { "enum": ["four", "one", "three", "two"], "type": "string" } }
+        },
+        "required": ["id", "meta-data", "statuses", "title"]
+      }
+    }
+  },
+  "paths": {
+    "/category/book": {
+      "get": {
+        "operationId": "getBooks",
+        "tags": ["category", "books"],
+        "description": "Sample description.",
+        "summary": "List all Books",
+        "hide": true,
+        "thisIsCustom": true,
+        "parameters": [
+          {
+            "name": "query-status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "thisIsCustom": "value",
+              "type": "array",
+              "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": { "$ref": "#/components/schemas/GetAllBooksQueryRes" }
+                  },
+                  "required": ["data", "success"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": { "$ref": "#/components/schemas/ResponseUnsuccessData" }
+                  },
+                  "required": ["data", "success"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Oh! Internal Error!",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": { "$ref": "#/components/schemas/ResponseUnsuccessData" }
+                  },
+                  "required": ["data", "success"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/category/book/:id": {
+      "patch": {
+        "operationId": "EditBookApi",
+        "parameters": [
+          { "name": "another_field", "in": "query", "required": true, "schema": { "type": "string" } },
+          {
+            "name": "query-status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "thisIsCustom": "value",
+              "type": "array",
+              "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": { "$ref": "#/components/schemas/EditBookRes" }
+                  },
+                  "required": ["data", "success"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

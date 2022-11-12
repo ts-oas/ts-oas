@@ -156,6 +156,11 @@ export class TypescriptOAS extends SchemaGenerator {
                 responses[respSymbol.escapedName as string][comment] = comments[comment];
             }
 
+            // TODO: we should have a default option in api
+            if (!responses[respSymbol.escapedName as string]["description"]) {
+                responses[respSymbol.escapedName as string]["description"] = "";
+            }
+
             responses[respSymbol.escapedName as string].content = {
                 [contentType]: {
                     schema: this.getTypeDefinition(respType, this.args.ref, undefined, undefined, respType.aliasSymbol),

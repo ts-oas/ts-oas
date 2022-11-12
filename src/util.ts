@@ -5,7 +5,7 @@ import * as ts from "typescript";
  * @param files Paths of interface files
  * @param tsCompilerOptions Path of tsconfig file as string / Configs as object
  * @param basePath Base directory of files
- * @returns 
+ * @returns
  */
 export function createProgram(
     files: string[],
@@ -13,6 +13,8 @@ export function createProgram(
     basePath: string = "./"
 ): ts.Program {
     let compilerOptions: ts.CompilerOptions;
+
+    if (!basePath.endsWith("/")) basePath += "/";
     
     if (typeof tsCompilerOptions === "string") compilerOptions = getConfigFromFile(tsCompilerOptions);
     else compilerOptions = ts.convertCompilerOptionsFromJson(tsCompilerOptions, basePath).options;
@@ -30,7 +32,10 @@ export function createProgram(
             options[k] = compilerOptions[k];
         }
     }
-    return ts.createProgram(files, options);
+    return ts.createProgram(
+        files.map((file) => basePath + file),
+        options
+    );
 }
 
 export function getConfigFromFile(configFileName: string): ts.CompilerOptions {
