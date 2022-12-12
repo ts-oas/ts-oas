@@ -33,7 +33,7 @@ export type OperationObject = {
 };
 
 export type PathsObject = {
-    [path: string]: Partial<Record<HTTPMethod, OperationObject>>;
+    [path: string]: Partial<Record<Lowercase<HTTPMethod>, OperationObject>>;
 };
 
 export type OpenApiSpecData = {

@@ -22,7 +22,7 @@ export class SchemaGenerator {
         this.annotationKeywords = {
             ...validationKeywords,
             ...openApiKeywords,
-            ...this.args.customKeywords?.reduce((acc, word) => ({ ...acc, [word]: true }), {}),
+            ...this.args.customKeywords?.reduce((acc, word) => ({ ...acc, [word]: 'custom' }), {}),
         };
     }
     protected args: Options;
@@ -167,6 +167,7 @@ export class SchemaGenerator {
             titles: false,
             ignoreRequired: false,
             ignoreErrors: false,
+            customKeywordPrefix: 'x-',
             customKeywords: [],
             uniqueNames: false,
             defaultNumberType: "number",
@@ -364,10 +365,11 @@ export class SchemaGenerator {
             // to process the "." and beyond from the value
             if (text.startsWith(".")) {
                 const valueParts = text.slice(1).split(" ");
-                if (this.annotationKeywords[valueParts[0]]) {
+                const keywordExisted = this.annotationKeywords[valueParts[0]];
+                if (keywordExisted) {
                     definition[name] = {
                         ...definition[name],
-                        [valueParts[0]]: valueParts[1]
+                        [(keywordExisted === 'custom' ? this.args.customKeywordPrefix : '') + valueParts[0]]: valueParts[1]
                             ? this.parseValue(symbol, valueParts[0], valueParts.slice(1).join(" "))
                             : true,
                     };
@@ -378,17 +380,19 @@ export class SchemaGenerator {
             // In TypeScript 3.7+, the "." is kept as part of the annotation name
             if (name.includes(".")) {
                 const nameParts = name.split(".");
-                if (nameParts.length === 2 && this.annotationKeywords[nameParts[1]]) {
+                const keywordExisted = this.annotationKeywords[nameParts[1]];
+                if (nameParts.length === 2 && keywordExisted) {
                     definition[nameParts[0]] = {
                         ...definition[nameParts[0]],
-                        [nameParts[1]]: text ? this.parseValue(symbol, name, text) : true,
+                        [(keywordExisted === 'custom' ? this.args.customKeywordPrefix : '') + nameParts[1]]: text ? this.parseValue(symbol, name, text) : true,
                     };
                     return;
                 }
             }
 
-            if (this.annotationKeywords[name]) {
-                definition[name] = text ? this.parseValue(symbol, name, text) : true;
+            const keywordExisted = this.annotationKeywords[name];
+            if (keywordExisted) {
+                definition[(keywordExisted === 'custom' ? this.args.customKeywordPrefix : '') + name] = text ? this.parseValue(symbol, name, text) : true;
             } else {
                 // special annotations
                 otherAnnotations[name] = true;

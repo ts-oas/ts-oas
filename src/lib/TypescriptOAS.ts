@@ -214,6 +214,7 @@ export class TypescriptOAS extends SchemaGenerator {
             };
 
             // comments
+            if (comments["ignore"]) continue;
             if (comments["tags"]) {
                 operation.tags = comments["tags"].split(",").map((tag: string) => tag.trim());
                 delete comments["tags"];

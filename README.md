@@ -148,7 +148,7 @@ console.log(schema);
 
 **Special keywords for root of API types**
 
-@summary @operationId @tags @hide @body.description @body.contentType
+@summary @operationId @tags @ignore @body.description @body.contentType
 
 <details><summary>Example</summary>
 
@@ -158,7 +158,7 @@ console.log(schema);
  * @summary Summary of Endpoint
  * @operationId addBar
  * @tags foos,bars
- * @hide
+ * @ignore
  * @body.description Description for body of request.
  * @body.contentType application/json
  */
@@ -202,3 +202,10 @@ Connecting Typescript types to serializer and validators to cut down the develop
 ## Contributing
 
 Any contributions are welcome.
+
+TODOs:
+
+-   [ ] CLI
+-   [ ] Support for request and response header specs
+-   [ ] More Docs and examples
+-   [ ] More tests

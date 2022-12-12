@@ -1,10 +1,10 @@
 import * as ts from "typescript";
-import { IJsonSchema, OpenAPIV3 } from "openapi-types";
+import { OpenAPIV3 } from "openapi-types";
 import { HttpStatusCode } from "./enums/HttpStatusCode.enum";
 import { HTTPMethod } from "./enums/HTTPMethod.enum";
 
 export type AnnotationKeywords = {
-    [prop: string]: boolean;
+    [prop: string]: boolean | 'custom';
 };
 
 export type Options = {
@@ -44,6 +44,10 @@ export type Options = {
      * @default "number"
      */
     defaultNumberType?: "number" | "integer";
+    /**
+     * @default "x-"
+     */
+    customKeywordPrefix?: string | null;
     customKeywords?: string[];
     schemaProcessor?: (schema: Definition) => Definition;
 };

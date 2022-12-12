@@ -75,7 +75,6 @@ export const validationKeywords = {
 export const openApiKeywords = {
     summary: true,
     operationId: true,
-    hide: true,
     tags: true,
     contentType: true,
 };

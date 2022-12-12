@@ -7,7 +7,7 @@
         "type": "object",
         "properties": {
           "query-status": {
-            "thisIsCustom": "value",
+            "x-thisIsCustom": "value",
             "type": "array",
             "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
           }
@@ -36,7 +36,7 @@
         "properties": {
           "another_field": { "type": "string" },
           "query-status": {
-            "thisIsCustom": "value",
+            "x-thisIsCustom": "value",
             "type": "array",
             "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
           }
@@ -63,15 +63,14 @@
         "tags": ["category", "books"],
         "description": "Sample description.",
         "summary": "List all Books",
-        "hide": true,
-        "thisIsCustom": true,
+        "x-thisIsCustom": true,
         "parameters": [
           {
             "name": "query-status",
             "in": "query",
             "required": false,
             "schema": {
-              "thisIsCustom": "value",
+              "x-thisIsCustom": "value",
               "type": "array",
               "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
             }
@@ -136,7 +135,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "thisIsCustom": "value",
+              "x-thisIsCustom": "value",
               "type": "array",
               "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
             }

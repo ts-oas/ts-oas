@@ -34,7 +34,6 @@ type GetAllBooksQueryRes = Book[];
  * Sample description.
  * @summary List all Books
  * @operationId getBooks
- * @hide
  * @thisIsCustom
  * @tags category, books
  * @body.contentType multipart/form-data

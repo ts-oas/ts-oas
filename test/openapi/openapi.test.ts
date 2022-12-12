@@ -1,5 +1,5 @@
 import { resolve } from "path";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { expect } from "chai";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import TypescriptOAS, { createProgram } from "../../src";
@@ -19,8 +19,8 @@ describe("openapi", () => {
 
         // writeFileSync(resolve(__dirname, `openapi.schema.json`), JSON.stringify(spec), "utf8");
 
-        await SwaggerParser.validate(spec as any, {});
         expect(spec).to.deep.equal(openapiFile);
+        await SwaggerParser.validate(spec as any, {});
     });
 
     it("should validate against SwaggerParser and json file with refs", async () => {
@@ -29,8 +29,8 @@ describe("openapi", () => {
 
         // writeFileSync(resolve(__dirname, `openapi-with-ref.schema.json`), JSON.stringify(spec), "utf8");
 
-        await SwaggerParser.validate(spec as any, {});
         expect(spec).to.deep.equal(openapiWithRefFile);
+        await SwaggerParser.validate(spec as any, {});
     });
 
     it("should have custom defaultContentType", async () => {
