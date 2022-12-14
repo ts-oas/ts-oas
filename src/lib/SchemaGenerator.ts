@@ -951,6 +951,10 @@ export class SchemaGenerator {
             }
         }
 
+        if (typ.aliasTypeArguments?.length) {
+            asRef = false;
+        }
+        
         let fullTypeName = "";
         if (asTypeAliasRef) {
             const typeName = this.tc

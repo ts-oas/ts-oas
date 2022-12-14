@@ -13,14 +13,13 @@
           }
         }
       },
-      "Record<string,string>": { "type": "object" },
       "Book": {
         "type": "object",
         "properties": {
           "id": { "description": "this is id.", "type": "number" },
           "title": { "default": "sample title", "type": "string" },
           "date": { "format": "date", "type": "string" },
-          "meta-data": { "$ref": "#/components/schemas/Record<string,string>" },
+          "meta-data": { "type": "object" },
           "statuses": { "type": "array", "items": { "enum": ["four", "one", "three", "two"], "type": "string" } }
         },
         "required": ["id", "meta-data", "statuses", "title"]
@@ -49,7 +48,7 @@
           "id": { "description": "this is id.", "type": "number" },
           "title": { "default": "sample title", "type": "string" },
           "date": { "format": "date", "type": "string" },
-          "meta-data": { "$ref": "#/components/schemas/Record<string,string>" },
+          "meta-data": { "type": "object" },
           "statuses": { "type": "array", "items": { "enum": ["four", "one", "three", "two"], "type": "string" } }
         },
         "required": ["id", "meta-data", "statuses", "title"]
