@@ -10,7 +10,7 @@ const openapiWithRefFile = JSON.parse(readFileSync(resolve(__dirname, `openapi-w
 const typeNames = ["GetAllBooksApi", "EditBookApi"];
 const typeNamesForMapperTest = ["GetAllBooksApi", "EditBookApiWithMapper"];
 
-const program = createProgram(["openapi.ts"], {}, resolve(__dirname));
+const program = createProgram(["openapi.ts"], { strictNullChecks: true }, resolve(__dirname));
 
 describe("openapi", () => {
     it("should validate against SwaggerParser and json file", async () => {

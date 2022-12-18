@@ -18,7 +18,7 @@ export interface Book {
   /**
    * @format date
    */
-  date?: Date;
+  date?: Date | null;
   "meta-data": Record<string, string>;
   statuses: STATUS[];
 }
