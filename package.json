@@ -1,6 +1,6 @@
 {
   "name": "ts-oas",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Automatically transforms Typescript types into OpenAPI specifications.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -12,7 +12,7 @@
   ],
   "author": "Alireza Malek",
   "repository": "https://github.com/ts-oas/ts-oas",
-  "license": "BSD-3-Clause",
+  "license": "MIT",
   "keywords": [
     "typescript",
     "openapi",

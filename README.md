@@ -146,7 +146,7 @@ console.log(schema);
 | @example                                                       | any     | `@example foo` `@example {"abc":true}` `@example require('./examples.ts').myExampleConst`                    |
 | @examples                                                      | any     | `@example ["foo", "bar"]` `@example require('./examples.ts').myExampleArrayConst`                            |
 
-**Special keywords for root of API types**
+#### Special keywords for root of API types
 
 @summary @operationId @tags @ignore @body.description @body.contentType
 
@@ -174,7 +174,7 @@ export type AddBarAPI = ApiMapper<{
 
 </details>
 
-**Special keywords for response items**
+#### Special keywords for response items
 
 @contentType
 
@@ -193,6 +193,76 @@ export type AddBarAPI = ApiMapper<{
 
 </details>
 
+### Options
+
+#### `ref`
+
+> _default: false_
+
+Uses schemas as references, corresponding to their type references.
+
+#### `titles`
+
+> _default: false_
+
+Provides `title` field in each schema which is filled by it's corresponding field name or type name.
+
+#### `ignoreRequired`
+
+> _default: false_
+
+Ignores `required` field in all schemas.
+
+#### `ignoreErrors`
+
+> _default: false_
+
+Ignores errors in typescript files. May introduces wrong schemas.
+
+#### `uniqueNames`
+
+> _default: false_
+
+Replaces a hash for every type name to avoid duplication issues.
+
+#### `tsNodeRegister`
+
+> _default: false_
+
+Uses `ts-node/register` as a runtime argument. It enables you to directly execute TypeScript on Node.js without precompiling.
+
+#### `nullableKeyword`
+
+> _default: true_
+
+Provides `nullable: true` for nullable fields, otherwise set `type: "null"`.
+
+#### `defaultContentType`
+
+> _default: "\*/\*"_
+
+Default content type for all the operations. Can be overwritten case by case (See the annotations section.).
+
+#### `defaultNumberType`
+
+> _default: "number"_
+
+Default schema type for number types. Can be overwritten case by case (See the annotations section.).
+
+#### `customKeywords`
+
+Custom keywords to consider in annotations.
+
+#### `customKeywordPrefix`
+
+> _default: "x-"_
+
+Prefix that should be added to all `customKeywords`.
+
+#### `schemaProcessor`
+
+A function that will run over each generated schema.
+
 ## Inspirations
 
 `ts-oas` is highly inspired by [typescript-json-schema](https://github.com/YousefED/typescript-json-schema). While using the so-called library, it took a lot of workarounds to create compatible OpenAPI v3.0 specs. Plus, editing a schema enforced us to use schema-walker tools which added lots of overhead. So we came to add a schema-processor custom function option.
@@ -203,9 +273,9 @@ Connecting Typescript types to serializer and validators to cut down the develop
 
 Any contributions are welcome.
 
-TODOs:
+<details><summary>TODOs</summary>
 
 -   [ ] CLI
 -   [ ] Support for request and response header specs
--   [ ] More Docs and examples
--   [ ] More tests
+-   [ ] More docs and examples
+-   [ ] Complete tests
