@@ -265,7 +265,7 @@ export class TypescriptOAS extends SchemaGenerator {
             }
         });
 
-        const root: { [key: string]: Definition } = {
+        const root: { definitions: { [key: string]: Definition } } = {
             definitions: {},
         };
 
@@ -278,7 +278,7 @@ export class TypescriptOAS extends SchemaGenerator {
         if (this.args.ref && Object.keys(this.reffedDefinitions).length > 0) {
             root.definitions = { ...root.definitions, ...this.reffedDefinitions };
         }
-        return root;
+        return root.definitions;
     }
 
     public getSymbols(typeNames?: (string | RegExp)[]): SymbolRef[] {
