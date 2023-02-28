@@ -56,3 +56,90 @@ export const schemaWithTitle = {
     properties: { foo: { title: "a good title", type: "string" } },
     required: ["foo"],
 };
+
+// ---> @minimum @maximum @exclusiveMinimum @exclusiveMaximum
+type TypeWithMinimumMaximum = {
+    /**
+     * @minimum 1
+     * @maximum 100
+     * @exclusiveMinimum 2
+     * @exclusiveMaximum 20
+     */
+    foo: number;
+};
+export const schemaWithMinimumMaximum = {
+    type: "object",
+    properties: {
+        foo: {
+            type: "number",
+            minimum: 1,
+            maximum: 100,
+            exclusiveMinimum: 2,
+            exclusiveMaximum: 20,
+        },
+    },
+    required: ["foo"],
+};
+
+// ---> @minLength @maxLength
+type TypeWithMinLengthMaxLength = {
+    /**
+     * @minLength 1
+     * @maxLength 100
+     */
+    foo: string;
+};
+export const schemaWithMinLengthMaxLength = {
+    type: "object",
+    properties: {
+        foo: {
+            type: "string",
+            minLength: 1,
+            maxLength: 100,
+        },
+    },
+    required: ["foo"],
+};
+
+// ---> @minItems @maxItems
+type TypeWithMinItemsMaxItems = {
+    /**
+     * @minItems 1
+     * @maxItems 100
+     */
+    foo: string[];
+};
+export const schemaWithMinItemsMaxItems = {
+    type: "object",
+    properties: {
+        foo: {
+            type: "array",
+            minItems: 1,
+            maxItems: 100,
+            items: { type: "string" }
+        },
+    },
+    required: ["foo"],
+};
+
+// ---> @minProperties @maxProperties
+type TypeWithMinPropertiesMaxProperties = {
+    /**
+     * @minProperties 1
+     * @maxProperties 100
+     */
+    foo: {
+        [key: string]: string;
+    };
+};
+export const schemaWithMinPropertiesMaxProperties = {
+    type: "object",
+    properties: {
+        foo: {
+            type: "object",
+            minProperties: 1,
+            maxProperties: 100,
+        },
+    },
+    required: ["foo"],
+};

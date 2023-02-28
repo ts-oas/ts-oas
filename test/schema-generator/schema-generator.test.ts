@@ -2,9 +2,27 @@ import { resolve } from "path";
 import { inspect } from "util";
 import { expect } from "chai";
 import TypescriptOAS, { createProgram } from "../../src";
-import { schemaWithDefault, schemaWithFormat, schemaWithRef, schemaWithTitle } from "./types";
+import {
+    schemaWithDefault,
+    schemaWithFormat,
+    schemaWithMinItemsMaxItems,
+    schemaWithMinLengthMaxLength,
+    schemaWithMinPropertiesMaxProperties,
+    schemaWithMinimumMaximum,
+    schemaWithRef,
+    schemaWithTitle,
+} from "./types";
 
-const typeNames = ["TypeWithDefault", "TypeWithFormat", "TypeWithRef", "TypeWithTitle"];
+const typeNames = [
+    "TypeWithDefault",
+    "TypeWithFormat",
+    "TypeWithRef",
+    "TypeWithTitle",
+    "TypeWithMinimumMaximum",
+    "TypeWithMinLengthMaxLength",
+    "TypeWithMinItemsMaxItems",
+    "TypeWithMinPropertiesMaxProperties",
+];
 
 const program = createProgram(["types.ts"], { strictNullChecks: true }, resolve(__dirname));
 const tsoas = new TypescriptOAS(program, {});
@@ -28,5 +46,21 @@ describe("schema-generator", () => {
 
     it("annotation :: TypeWithTitle", async () => {
         expect(spec.TypeWithTitle).to.deep.equal(schemaWithTitle);
+    });
+
+    it("annotation :: TypeWithMinimumMaximum", async () => {
+        expect(spec.TypeWithMinimumMaximum).to.deep.equal(schemaWithMinimumMaximum);
+    });
+
+    it("annotation :: TypeWithMinLengthMaxLength", async () => {
+        expect(spec.TypeWithMinLengthMaxLength).to.deep.equal(schemaWithMinLengthMaxLength);
+    });
+
+    it("annotation :: TypeWithMinItemsMaxItems", async () => {
+        expect(spec.TypeWithMinItemsMaxItems).to.deep.equal(schemaWithMinItemsMaxItems);
+    });
+
+    it("annotation :: TypeWithMinPropertiesMaxProperties", async () => {
+        expect(spec.TypeWithMinPropertiesMaxProperties).to.deep.equal(schemaWithMinPropertiesMaxProperties);
     });
 });
