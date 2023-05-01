@@ -565,7 +565,7 @@ export class SchemaGenerator {
         const members: ts.NodeArray<ts.EnumMember> =
             node.kind === ts.SyntaxKind.EnumDeclaration
                 ? (node as ts.EnumDeclaration).members
-                : ts.createNodeArray([node as ts.EnumMember]);
+                : ts.factory.createNodeArray([node as ts.EnumMember]);
         var enumValues: (number | boolean | string | null)[] = [];
         const enumTypes: string[] = [];
 
@@ -778,7 +778,7 @@ export class SchemaGenerator {
             return !(
                 decls &&
                 decls.filter((decl) => {
-                    const mods = decl.modifiers;
+                    const mods = ts.canHaveModifiers(decl) ? ts.getModifiers(decl) : [];
                     return mods && mods.filter((mod) => mod.kind === ts.SyntaxKind.PrivateKeyword).length > 0;
                 }).length > 0
             );

@@ -16,6 +16,7 @@ Automatically transforms Typescript types into OpenAPI (formerly Swagger) specif
 -   Reference schemas and components. Schema references can be generated and addressed in accord with their correspond type references.
 -   Schema processor function for any desired post-process (if JSDoc isn't enough).
 -   Generate schemas separately.
+-   Typescript 4 and 5 compliant.
 
 ## Install
 
