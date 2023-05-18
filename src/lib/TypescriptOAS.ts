@@ -54,7 +54,7 @@ export class TypescriptOAS extends SchemaGenerator {
 
     private getPathParams(type: ts.Type): ParameterObject[] {
         if (this.isEmptyObj(type)) return [];
-        if (!this.isValidObject(type)) throw Error();
+        if (!this.isValidObject(type)) throw new Error('Expected a valid Object.');
 
         const parameters: ParameterObject[] = [];
 
@@ -83,7 +83,7 @@ export class TypescriptOAS extends SchemaGenerator {
 
     private getQueryParams(type: ts.Type): ParameterObject[] {
         if (this.isEmptyObj(type)) return [];
-        if (!this.isValidObject(type)) throw Error();
+        if (!this.isValidObject(type)) throw new Error('Expected a valid Object.');
 
         const parameters: ParameterObject[] = [];
 
@@ -112,7 +112,7 @@ export class TypescriptOAS extends SchemaGenerator {
 
     private getBody(type: ts.Type, comments: Record<any, any> = {}): RequestBodyObject | null {
         if (this.isEmptyObj(type)) return null;
-        if (!this.isValidObject(type)) throw Error();
+        if (!this.isValidObject(type)) throw new Error('Expected a valid Object.');
 
         const schema = this.getTypeDefinition(type, this.args.ref, undefined, undefined, type.symbol);
 
@@ -133,16 +133,19 @@ export class TypescriptOAS extends SchemaGenerator {
     }
 
     private getResponses(type: ts.Type): ResponsesObject {
-        if (!this.isValidObject(type) || !type.getProperties().length) throw Error();
+        if (!this.isValidObject(type)) throw new Error('Expected a valid Object.');
+        if (!type.getProperties().length) throw new Error('"responses" must have at least one property.');
 
         const responses: ResponsesObject = {};
 
         for (const respSymbol of type.getProperties()) {
             let respType = this.getTypeFromSymbol(respSymbol);
 
-            if (!Object.values(HttpStatusCode).includes(+(respSymbol.escapedName as string))) throw Error();
+            if (!Object.values(HttpStatusCode).includes(+(respSymbol.escapedName as string))) {
+                throw new Error(`"${respSymbol.escapedName}" is not a valid status code.`);
+            }
 
-            if (!this.isValidObject(respType)) throw Error();
+            if (!this.isValidObject(respType)) throw new Error('Expected a valid Object.');
 
             const comments = {};
             this.parseCommentsIntoDefinition(respSymbol, comments, {});
@@ -207,7 +210,9 @@ export class TypescriptOAS extends SchemaGenerator {
             const querySymbol = type.getProperty("query");
             const responsesSymbol = type.getProperty("responses");
 
-            if (!methodSymbol || !pathSymbol || !responsesSymbol) throw new Error();
+            if (!pathSymbol) throw new Error(`[${typeName}] "path" is required.`);
+            if (!methodSymbol) throw new Error(`[${typeName}] "method" is required.`);
+            if (!responsesSymbol) throw new Error(`[${typeName}] "responses" is required.`);
 
             const operation: OperationObject = {
                 operationId: type.aliasSymbol?.escapedName as string,
@@ -226,9 +231,9 @@ export class TypescriptOAS extends SchemaGenerator {
 
             // parameters
             operation.parameters = [];
-            if (paramsSymbol) operation.parameters?.push(...this.getPathParams(this.getTypeFromSymbol(paramsSymbol)));
-            if (querySymbol) operation.parameters?.push(...this.getQueryParams(this.getTypeFromSymbol(querySymbol)));
-            if (!operation.parameters?.length) delete operation.parameters;
+            if (paramsSymbol) operation.parameters.push(...this.getPathParams(this.getTypeFromSymbol(paramsSymbol)));
+            if (querySymbol) operation.parameters.push(...this.getQueryParams(this.getTypeFromSymbol(querySymbol)));
+            if (!operation.parameters.length) delete operation.parameters;
 
             // requestBody
             if (bodySymbol) {
