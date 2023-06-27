@@ -6,6 +6,7 @@
   "typings": "dist/index.d.ts",
   "files": [
     "dist/",
+    "bin/",
     "package.json",
     "README.md",
     "LICENSE"
@@ -21,16 +22,20 @@
     "jsonschema",
     "schema"
   ],
+  "bin": {
+    "ts-oas": "./bin/ts-oas"
+  },
   "dependencies": {
     "openapi-types": "^12.0.2",
     "typescript": "5.0.4",
-    "yargs": "^17.1.1"
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",
     "@types/chai": "^4.2.21",
     "@types/glob": "^7.1.4",
     "@types/mocha": "^9.0.0",
+    "@types/yargs": "^17.0.24",
     "ajv": "^8.6.3",
     "ajv-formats": "^2.1.1",
     "chai": "^4.3.4",
