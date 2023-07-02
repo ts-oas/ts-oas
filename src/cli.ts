@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
 import * as yargs from "yargs";
 import TypescriptOAS, { createProgram } from ".";
@@ -11,7 +11,9 @@ const argv = yargs
     .help()
     .alias("h", "help")
     .alias("v", "version")
-    .epilogue("Generate OpenAPI specifications from the input Typescript files.\nFor a full documentation, visit the homepage.\n\nHomepage: https://github.com/ts-oas/ts-oas 'Copyright 2023'")
+    .epilogue(
+        "Generate OpenAPI specifications from Typescript types.\nFor a full documentation, visit the homepage.\n\nHomepage: https://github.com/ts-oas/ts-oas 'Copyright 2023'"
+    )
     .example("$0 ./interfaces/sample.ts myApi,mySecondApi", "")
     .demandCommand(2, "\u001b[0;31mBoth <file-paths> and <type-names> are required arguments.\u001b[0m")
     .option("tsconfig-file", {
@@ -22,7 +24,7 @@ const argv = yargs
     .option("options-file", {
         alias: "p",
         type: "string",
-        description: "Path to a JSON file containing 'ts-oas' Options. Reffered to documentations.",
+        description: "Path to a JSON file containing 'ts-oas' Options. Refer to the documentation.",
     })
     .option("spec-file", {
         alias: "s",
@@ -33,6 +35,11 @@ const argv = yargs
         alias: "e",
         type: "boolean",
         description: "Only generates pure schemas from given types. ('spec-file' will be ignored.)",
+    })
+    .option("output", {
+        alias: "o",
+        type: "string",
+        description: "Path to a JSON file that will be used to write the output. Will create the file if not existed.",
     }).argv as any;
 
 const programArgs = {
@@ -42,8 +49,8 @@ const programArgs = {
         : {},
 };
 const OpenApiArgs = {
-    options: argv["options-file"] ? JSON.parse(readFileSync(argv["options-file"], { encoding: "utf8" })) : {},
     typeNames: (argv._[1] as string).split(","),
+    options: argv["options-file"] ? JSON.parse(readFileSync(argv["options-file"], { encoding: "utf8" })) : {},
     specData: argv["spec-file"] ? JSON.parse(readFileSync(argv["spec-file"], { encoding: "utf8" })) : {},
 };
 
@@ -58,5 +65,8 @@ if (argv["schema-only"]) {
     result = tsoas.getOpenApiSpec(OpenApiArgs.typeNames, OpenApiArgs.specData);
 }
 
-// TODO: add option to write to file.
-console.log(JSON.stringify(result, null, 2));
+if (argv["output"]) {
+    writeFileSync(argv["output"], JSON.stringify(result, null, 2), { encoding: "utf8" });
+} else {
+    console.log(JSON.stringify(result, null, 2));
+}
