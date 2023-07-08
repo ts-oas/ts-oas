@@ -45,16 +45,16 @@ const argv = yargs
 const programArgs = {
     files: (argv._[0] as string).split(","),
     tsCompilerOptions: argv["tsconfig-file"]
-        ? JSON.parse(readFileSync(argv["tsconfig-file"], { encoding: "utf8" }))
+        ? JSON.parse(readFileSync(resolve(argv["tsconfig-file"]), { encoding: "utf8" }))
         : {},
 };
 const OpenApiArgs = {
-    typeNames: (argv._[1] as string).split(","),
-    options: argv["options-file"] ? JSON.parse(readFileSync(argv["options-file"], { encoding: "utf8" })) : {},
-    specData: argv["spec-file"] ? JSON.parse(readFileSync(argv["spec-file"], { encoding: "utf8" })) : {},
+    typeNames: (argv._[1] as string).split(",").map((name) => name.startsWith('/') ? new RegExp(name.slice(1, -1)) : name),
+    options: argv["options-file"] ? JSON.parse(readFileSync(resolve(argv["options-file"]), { encoding: "utf8" })) : {},
+    specData: argv["spec-file"] ? JSON.parse(readFileSync(resolve(argv["spec-file"]), { encoding: "utf8" })) : {},
 };
 
-const program = createProgram(programArgs.files, programArgs.tsCompilerOptions, resolve(__dirname));
+const program = createProgram(programArgs.files, programArgs.tsCompilerOptions, resolve());
 const tsoas = new TypescriptOAS(program, OpenApiArgs.options);
 
 let result: Record<any, any>;
