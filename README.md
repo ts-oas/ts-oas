@@ -12,6 +12,7 @@ Automatically transforms Typescript types into OpenAPI (formerly Swagger) specif
 
 ## Features
 
+-   Both [Programmatically](###A-quick-example) and [Command line](##CLI) support.
 -   Supports JSDoc annotations. Using pre-defined and user-defined keywords, meta-data can be included in every schema objects.
 -   Reference schemas and components. Schema references can be generated and addressed in accord with their correspond type references.
 -   Schema processor function for any desired post-process (if JSDoc isn't enough).
@@ -80,6 +81,7 @@ export type AddBarAPI = ApiMapper<{
 export type Bar = {
     /**
      * Description for barName.
+     * @minLength 10
      */
     barName: string;
     barType: "one" | "two";
@@ -94,7 +96,7 @@ import { resolve } from "path";
 import { writeFileSync } from "fs";
 import { inspect } from "util";
 
-// Create a Typescript program. Or any generic ts program can be used.
+// create a Typescript program. or any generic ts program can be used.
 const tsProgram = createProgram(
     ["interfaces.ts"],
     {
@@ -108,14 +110,131 @@ const tsoas = new TypescriptOAS(tsProgram, {
     ref: true,
 });
 
-// get the complete OAS. Determine which types must be used for API specs by passing the type names(Regex/exact name)
-const specObject = tsoas.getOpenApiSpec([/API$/]); // /API$/ -> All types that ends with "API"
+// get the complete OAS. determine which types must be used for API specs by passing the type names(Regex/exact name)
+const specObject = tsoas.getOpenApiSpec([/API$/]); // /API$/ -> all types that ends with "API"
 
-// write results to a file.
+// write results into a file.
 writeFileSync("./schemas.ts", `const spec = ${inspect(specObject, { depth: null })};\n`);
 ```
 
 Run the above script and open `schema.ts` file.
+
+<details><summary>Expected schema.ts file</summary>
+
+```json
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "OpenAPI specification",
+        "version": "1.0.0"
+    },
+    "components": {
+        "schemas": {
+            "Bar": {
+                "type": "object",
+                "properties": {
+                    "barName": {
+                        "description": "Description for barName.",
+                        "minLength": 10,
+                        "type": "string"
+                    },
+                    "barType": {
+                        "enum": ["one", "two"],
+                        "type": "string"
+                    }
+                },
+                "required": ["barName", "barType"]
+            }
+        }
+    },
+    "paths": {
+        "/foo/bar/:id": {
+            "get": {
+                "operationId": "GetBarAPI",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "from_date",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Bar"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "enum": [false]
+                                        }
+                                    },
+                                    "required": ["success"]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/foo/bar": {
+            "post": {
+                "operationId": "AddBarAPI",
+                "description": "Sample description.",
+                "summary": "Add a Bar",
+                "requestBody": {
+                    "content": {
+                        "*/*": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Bar"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+</details>
 
 ### Get schemas separately
 
@@ -124,6 +243,36 @@ Schemas with any format can be generated by:
 ```ts
 const schema = tsoas.getSchemas(["Bar"]);
 console.log(schema);
+```
+
+## CLI
+
+Command line tool is designed to behave just like the programmatic way. Once it has been intalled, CLI can be executable using `npx ts-oas`, or just `ts-oas` if installed globally.
+
+```
+Usage: ts-oas <file-paths> <type-names> [options]
+
+<file-paths> : Comma-separated list of relative .ts file paths which contain
+types.
+<type-names> : Comma-separated list of type names (Regex/exact name) to be
+considered in files.
+
+Options:
+  -c, --tsconfig-file  Path to a JSON tsconfig file.                    [string]
+  -p, --options-file   Path to a JSON file containing 'ts-oas' Options. Refer to
+                       the documentation.                               [string]
+  -s, --spec-file      Path to a JSON file containing additional OpenAPI
+                       specifications.                                  [string]
+  -e, --schema-only    Only generates pure schemas from given types.
+                       ('spec-file' will be ignored.)                  [boolean]
+  -o, --output         Path to a JSON file that will be used to write the
+                       output. Will create the file if not existed.     [string]
+  -h, --help           Show help                                       [boolean]
+  -v, --version        Show version number                             [boolean]
+
+Examples:
+  ts-oas ./interfaces/sample.ts myApi,mySecondApi
+
 ```
 
 ## Documentations
@@ -276,7 +425,7 @@ Any contributions are welcome.
 
 <details><summary>TODOs</summary>
 
--   [ ] CLI
+-   [x] CLI
 -   [ ] Support for request and response header specs
 -   [ ] More docs and examples
 -   [ ] Complete tests
