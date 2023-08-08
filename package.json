@@ -1,7 +1,7 @@
 {
   "name": "ts-oas",
-  "version": "0.3.0",
-  "description": "Automatically transforms Typescript types into OpenAPI specifications.",
+  "version": "0.4.0",
+  "description": "Automatically generate OpenAPI specifications from Typescript types.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "files": [

@@ -2,18 +2,18 @@
 
 [![npm version](https://img.shields.io/npm/v/ts-oas.svg)](https://www.npmjs.com/package/ts-oas)
 
-Automatically transforms Typescript types into OpenAPI (formerly Swagger) specifications. Needs interfaces/types in a particular format.
+Automatically generate OpenAPI (formerly Swagger) specifications from Typescript types. Needs interfaces/types in a specific format.
 
 ## Benenfits
 
--   Write once, use many. Typescript is one of the most fluent ways to declare API specifications. Using `ts-oas`, we are able to utilize the generated specs for not only the documentations, also input validations (eg. ajv), serializing, testing and more.
+-   Write once, use many. Typescript is one of the most fluent ways to declare API specifications. Using `ts-oas`, we are able to utilize the generated specs for not only the documentations, also input validations (eg. ajv), serializing, maintaining business logic codes or their tests (with generics) and more.
 -   Automation first. Simply write a script and regenerate specs accordingly after making any change in types.
--   Headless. Works with any server-side framework, unlike some other tools.
+-   Headless. Works with any server-side framework, unlike some tools.
 
 ## Features
 
--   Both [Programmatically](###A-quick-example) and [Command line](##CLI) support.
--   Supports JSDoc annotations. Using pre-defined and user-defined keywords, meta-data can be included in every schema objects.
+-   Both [Programmatic](#a-quick-example) and [Command line](#cli) support.
+-   Supports JSDoc annotations. Using pre-defined and user-defined keywords, metadata can be included in every schema objects.
 -   Reference schemas and components. Schema references can be generated and addressed in accord with their correspond type references.
 -   Schema processor function for any desired post-process (if JSDoc isn't enough).
 -   Generate schemas separately.
