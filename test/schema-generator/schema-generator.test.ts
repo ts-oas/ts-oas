@@ -3,8 +3,10 @@ import { inspect } from "util";
 import { expect } from "chai";
 import TypescriptOAS, { createProgram } from "../../src";
 import {
+    schemaWithAdditionalProperties,
     schemaWithDefault,
     schemaWithFormat,
+    schemaWithIgnore,
     schemaWithMinItemsMaxItems,
     schemaWithMinLengthMaxLength,
     schemaWithMinPropertiesMaxProperties,
@@ -22,6 +24,8 @@ const typeNames = [
     "TypeWithMinLengthMaxLength",
     "TypeWithMinItemsMaxItems",
     "TypeWithMinPropertiesMaxProperties",
+    "TypeWithAdditionalProperties",
+    "TypeWithIgnore",
 ];
 
 const program = createProgram(["types.ts"], { strictNullChecks: true }, resolve(__dirname));
@@ -62,5 +66,13 @@ describe("schema-generator", () => {
 
     it("annotation :: TypeWithMinPropertiesMaxProperties", async () => {
         expect(spec.TypeWithMinPropertiesMaxProperties).to.deep.equal(schemaWithMinPropertiesMaxProperties);
+    });
+
+    it("annotation :: TypeWithAdditionalProperties", async () => {
+        expect(spec.TypeWithAdditionalProperties).to.deep.equal(schemaWithAdditionalProperties);
+    });
+
+    it("annotation :: TypeWithIgnore", async () => {
+        expect(spec.TypeWithIgnore).to.deep.equal(schemaWithIgnore);
     });
 });

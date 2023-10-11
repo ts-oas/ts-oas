@@ -143,3 +143,62 @@ export const schemaWithMinPropertiesMaxProperties = {
     },
     required: ["foo"],
 };
+
+// ---> @additionalProperties
+type TypeWithAdditionalProperties = {
+    /**
+     * @additionalProperties
+     */
+    foo: {
+        bar: string;
+    };
+    /**
+     * @additionalProperties false
+     */
+    foo2: {
+        bar: string;
+    };
+};
+export const schemaWithAdditionalProperties = {
+    type: "object",
+    properties: {
+        foo: {
+            type: "object",
+            additionalProperties: true,
+            properties: {
+                bar: {
+                    type: "string",
+                },
+            },
+            required: ["bar"],
+        },
+        foo2: {
+            type: "object",
+            additionalProperties: false,
+            properties: {
+                bar: {
+                    type: "string",
+                },
+            },
+            required: ["bar"],
+        },
+    },
+    required: ["foo","foo2"],
+};
+
+type TypeWithIgnore = {
+    /**
+     * @ignore
+     */
+    foo: string;
+    bar: string;
+};
+export const schemaWithIgnore = {
+    type: "object",
+    properties: {
+        bar: {
+            type: "string",
+        },
+    },
+    required: ["bar"],
+};
