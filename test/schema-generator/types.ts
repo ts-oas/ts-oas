@@ -186,6 +186,7 @@ export const schemaWithAdditionalProperties = {
     required: ["foo","foo2"],
 };
 
+// ---> @ignore
 type TypeWithIgnore = {
     /**
      * @ignore
@@ -202,3 +203,68 @@ export const schemaWithIgnore = {
     },
     required: ["bar"],
 };
+
+// ---> @pattern
+type TypeWithPattern = {
+    /**
+     * @pattern ^[0-9a-z]+$
+     */
+    foo: string;
+    /**
+     * @pattern ^abc123$
+     */
+    bar: string;
+};
+export const schemaWithPattern = {
+    type: "object",
+    properties: {
+        foo: {
+            type: "string",
+            pattern: "^[0-9a-z]+$",
+        },
+        bar: {
+            type: "string",
+            pattern: "^abc123$",
+        },
+    },
+    required: ["bar", "foo"],
+};
+
+// ---> @example
+type TypeWithExample = {
+    /**
+     * @example An example for foo
+     */
+    foo: string;
+    /**
+     * @example [1,2,3,4]
+     */
+    bar: number[];
+    /**
+     * @example {"abc":true, "def":false}
+     */
+    baz: {
+        [key: string]: boolean;
+    };
+};
+export const schemaWithExample = {
+    type: "object",
+    properties: {
+        foo: {
+            type: "string",
+            example: "An example for foo",
+        },
+        bar: {
+            type: "array",
+            items: { type: "number" },
+            example: [1,2,3,4],
+        },
+        baz: {
+            type: "object",
+            example: { "abc":true, "def":false },
+        },
+    },
+    required: ["bar", "baz", "foo"],
+};
+
+// TODO: add example annotations from external files
