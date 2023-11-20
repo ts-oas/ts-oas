@@ -4,7 +4,7 @@
 
 Automatically generate OpenAPI (formerly Swagger) specifications from Typescript types. Needs interfaces/types in a specific format.
 
-## Benenfits
+## Benefits
 
 -   Write once, use many. Typescript is one of the most fluent ways to declare API specifications. Using `ts-oas`, we are able to utilize the generated specs for not only the documentations, also input validations (eg. ajv), serializing, maintaining business logic codes or their tests (with generics) and more.
 -   Automation first. Simply write a script and regenerate specs accordingly after making any change in types.
@@ -247,7 +247,7 @@ console.log(schema);
 
 ## CLI
 
-Command line tool is designed to behave just like the programmatic way. Once it has been intalled, CLI can be executable using `npx ts-oas`, or just `ts-oas` if installed globally.
+Command line tool is designed to behave just like the programmatic way. Once it has been installed, CLI can be executable using `npx ts-oas`, or just `ts-oas` if installed globally.
 
 ```
 Usage: ts-oas <file-paths> <type-names> [options]
@@ -415,7 +415,7 @@ A function that will run over each generated schema.
 
 ## Inspirations
 
-`ts-oas` is highly inspired by [typescript-json-schema](https://github.com/YousefED/typescript-json-schema). While using the so-called library, it took a lot of workarounds to create compatible OpenAPI v3.0 specs. Plus, editing a schema enforced us to use schema-walker tools which added lots of overhead. So we came to add a schema-processor custom function option.
+`ts-oas` is highly inspired by [typescript-json-schema](https://github.com/YousefED/typescript-json-schema). While using the so-called library, it took lots of workarounds to create compatible OpenAPI v3.0 specs. For example, modifying output schemas enforced us to use schema-walker tools which added lots of overhead in our scripts (Despite of compatible OpenAPI schemas in `ts-oas`, there is a schema-processor custom function as an option as well).
 
 Connecting Typescript types to serializer and validators to cut down the developing times, was the main purpose of developing this tool.
 
