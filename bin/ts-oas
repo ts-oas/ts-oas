@@ -1,3 +1,2 @@
 #!/usr/bin/env node
-var app = require('../dist/cli.js');
-app.run();
+require('../dist/cli.js');
