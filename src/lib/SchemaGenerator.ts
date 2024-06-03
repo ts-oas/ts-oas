@@ -22,7 +22,7 @@ export class SchemaGenerator {
         this.annotationKeywords = {
             ...validationKeywords,
             ...openApiKeywords,
-            ...this.args.customKeywords?.reduce((acc, word) => ({ ...acc, [word]: 'custom' }), {}),
+            ...this.args.customKeywords?.reduce((acc, word) => ({ ...acc, [word]: "custom" }), {}),
         };
     }
     protected args: Options;
@@ -161,13 +161,13 @@ export class SchemaGenerator {
         return { symbols, allSymbols, inheritingTypes, typeChecker, settings };
     }
 
-    protected getDefaultOptions(): Required<Omit<Options, 'schemaProcessor'>> {
+    protected getDefaultOptions(): Required<Omit<Options, "schemaProcessor">> {
         return {
             ref: false,
             titles: false,
             ignoreRequired: false,
             ignoreErrors: false,
-            customKeywordPrefix: 'x-',
+            customKeywordPrefix: "x-",
             customKeywords: [],
             uniqueNames: false,
             defaultNumberType: "number",
@@ -369,9 +369,10 @@ export class SchemaGenerator {
                 if (keywordExisted) {
                     definition[name] = {
                         ...definition[name],
-                        [(keywordExisted === 'custom' ? this.args.customKeywordPrefix : '') + valueParts[0]]: valueParts[1]
-                            ? this.parseValue(symbol, valueParts[0], valueParts.slice(1).join(" "))
-                            : true,
+                        [(keywordExisted === "custom" ? this.args.customKeywordPrefix : "") + valueParts[0]]:
+                            valueParts[1]
+                                ? this.parseValue(symbol, valueParts[0], valueParts.slice(1).join(" "))
+                                : true,
                     };
                     return;
                 }
@@ -384,7 +385,9 @@ export class SchemaGenerator {
                 if (nameParts.length === 2 && keywordExisted) {
                     definition[nameParts[0]] = {
                         ...definition[nameParts[0]],
-                        [(keywordExisted === 'custom' ? this.args.customKeywordPrefix : '') + nameParts[1]]: text ? this.parseValue(symbol, name, text) : true,
+                        [(keywordExisted === "custom" ? this.args.customKeywordPrefix : "") + nameParts[1]]: text
+                            ? this.parseValue(symbol, name, text)
+                            : true,
                     };
                     return;
                 }
@@ -392,7 +395,9 @@ export class SchemaGenerator {
 
             const keywordExisted = this.annotationKeywords[name];
             if (keywordExisted) {
-                definition[(keywordExisted === 'custom' ? this.args.customKeywordPrefix : '') + name] = text ? this.parseValue(symbol, name, text) : true;
+                definition[(keywordExisted === "custom" ? this.args.customKeywordPrefix : "") + name] = text
+                    ? this.parseValue(symbol, name, text)
+                    : true;
             } else {
                 // special annotations
                 otherAnnotations[name] = true;
@@ -954,7 +959,7 @@ export class SchemaGenerator {
         if (typ.aliasTypeArguments?.length) {
             asRef = false;
         }
-        
+
         let fullTypeName = "";
         if (asTypeAliasRef) {
             const typeName = this.tc
@@ -1026,6 +1031,19 @@ export class SchemaGenerator {
         // Create the actual definition only if is an inline definition, or
         // if it will be a $ref and it is not yet created
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {
+            if (asRef) {
+                // must be here to prevent recursivity problems
+                let reffedDefinition: Definition;
+                if (asTypeAliasRef && reffedType && typ.symbol !== reffedType && symbol) {
+                    reffedDefinition = this.getTypeDefinition(typ, true, undefined, symbol, symbol);
+                } else {
+                    reffedDefinition = definition;
+                }
+                this.reffedDefinitions[fullTypeName] = reffedDefinition;
+                if (this.args.titles && fullTypeName) {
+                    definition.title = fullTypeName;
+                }
+            }
             const node = symbol?.getDeclarations() !== undefined ? symbol.getDeclarations()![0] : null;
             // console.log("getTypeDefinition");
             // console.log(definition);
@@ -1053,22 +1071,6 @@ export class SchemaGenerator {
                     definition.properties = {};
                 } else {
                     this.getClassDefinition(typ, definition);
-                }
-            }
-            if (asRef) {
-                // must be top of the if scope to prevent recursivity problems
-                let reffedDefinition: Definition;
-                if (asTypeAliasRef && reffedType && typ.symbol !== reffedType && symbol) {
-                    reffedDefinition = this.getTypeDefinition(typ, true, undefined, symbol, symbol);
-                } else {
-                    reffedDefinition = definition;
-                }
-                if (this.args.schemaProcessor) {
-                    this.args.schemaProcessor(reffedDefinition);
-                }
-                this.reffedDefinitions[fullTypeName] = reffedDefinition;
-                if (this.args.titles && fullTypeName) {
-                    definition.title = fullTypeName;
                 }
             }
         }
