@@ -1,5 +1,5 @@
 {
-  "name": "ts-oas",
+  "name": "@chsegala/ts-oas",
   "version": "0.4.2",
   "description": "Automatically generates OpenAPI specifications from Typescript types.",
   "main": "dist/index.js",

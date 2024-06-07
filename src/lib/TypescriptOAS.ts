@@ -12,6 +12,7 @@ import {
 } from "..";
 import { SymbolRef } from "../types/common";
 import { SchemaGenerator } from "./SchemaGenerator";
+import { OpenAPIV3 } from "openapi-types";
 
 export class TypescriptOAS extends SchemaGenerator {
     private isValidObject(type: ts.Type): boolean {
@@ -44,6 +45,7 @@ export class TypescriptOAS extends SchemaGenerator {
 
         return type.value;
     }
+
     private getMethod(type: ts.Type): string {
         if (!type.isStringLiteral() || !Object.values(HTTPMethod).includes(<HTTPMethod>type.value)) {
             throw new TypeError("Wrong type for method");
@@ -54,7 +56,7 @@ export class TypescriptOAS extends SchemaGenerator {
 
     private getPathParams(type: ts.Type): ParameterObject[] {
         if (this.isEmptyObj(type)) return [];
-        if (!this.isValidObject(type)) throw new Error('Expected a valid Object.');
+        if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
 
         const parameters: ParameterObject[] = [];
 
@@ -81,9 +83,31 @@ export class TypescriptOAS extends SchemaGenerator {
         return parameters;
     }
 
+    private getSecurity(type: ts.Type): OpenAPIV3.SecurityRequirementObject[] | undefined {
+        if (this.isEmptyObj(type)) return undefined;
+        if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
+        if (this.getTypeDefinition(type).type !== "array") throw new Error("Expected to be an array");
+
+        const security: any[] = [];
+        const typeDef = this.getTypeDefinition(type);
+
+        if (!typeDef?.items) {
+            return [];
+        }
+
+        for (const itemIndex in typeDef.items) {
+            const obj = typeDef.items[itemIndex];
+            for (const property in obj.properties) {
+                security.push({ [property]: [] });
+            }
+        }
+
+        return security;
+    }
+
     private getQueryParams(type: ts.Type): ParameterObject[] {
         if (this.isEmptyObj(type)) return [];
-        if (!this.isValidObject(type)) throw new Error('Expected a valid Object.');
+        if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
 
         const parameters: ParameterObject[] = [];
 
@@ -112,7 +136,7 @@ export class TypescriptOAS extends SchemaGenerator {
 
     private getBody(type: ts.Type, comments: Record<any, any> = {}): RequestBodyObject | null {
         if (this.isEmptyObj(type)) return null;
-        if (!this.isValidObject(type)) throw new Error('Expected a valid Object.');
+        if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
 
         const schema = this.getTypeDefinition(type, this.args.ref, undefined, undefined, type.symbol);
 
@@ -133,7 +157,7 @@ export class TypescriptOAS extends SchemaGenerator {
     }
 
     private getResponses(type: ts.Type): ResponsesObject {
-        if (!this.isValidObject(type)) throw new Error('Expected a valid Object.');
+        if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
         if (!type.getProperties().length) throw new Error('"responses" must have at least one property.');
 
         const responses: ResponsesObject = {};
@@ -145,7 +169,7 @@ export class TypescriptOAS extends SchemaGenerator {
                 throw new Error(`"${respSymbol.escapedName}" is not a valid status code.`);
             }
 
-            if (!this.isValidObject(respType)) throw new Error('Expected a valid Object.');
+            if (!this.isValidObject(respType)) throw new Error("Expected a valid Object.");
 
             const comments = {};
             this.parseCommentsIntoDefinition(respSymbol, comments, {});
@@ -209,6 +233,7 @@ export class TypescriptOAS extends SchemaGenerator {
             const paramsSymbol = type.getProperty("params");
             const querySymbol = type.getProperty("query");
             const responsesSymbol = type.getProperty("responses");
+            const securitySymbol = type.getProperty("security");
 
             if (!pathSymbol) throw new Error(`[${typeName}] "path" is required.`);
             if (!methodSymbol) throw new Error(`[${typeName}] "method" is required.`);
@@ -217,6 +242,13 @@ export class TypescriptOAS extends SchemaGenerator {
             const operation: OperationObject = {
                 operationId: type.aliasSymbol?.escapedName as string,
             };
+
+            if (securitySymbol) {
+                const securityValue = this.getSecurity(this.getTypeFromSymbol(securitySymbol));
+                if (securityValue) {
+                    operation.security = securityValue;
+                }
+            }
 
             // comments
             if (comments["ignore"]) continue;
