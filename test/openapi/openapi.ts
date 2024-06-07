@@ -60,7 +60,22 @@ type EditBookApi = {
     responses: { "200": Response<EditBookRes> };
 };
 
+type EditBookSecureApi = {
+    path: "/category/book/:id";
+    method: "PATCH";
+    security: [{ bearerToken: []; basicAuth: [] }];
+    param: { id: number };
+    query: EditBookQuery;
+    body: {};
+    responses: { "200": Response<EditBookRes> };
+};
+
 /**
  * @operationId EditBookApi
  */
 type EditBookApiWithMapper = ApiMapper<EditBookApi>;
+
+/**
+ * @operationId Edit Book Secure Api
+ */
+type EditBookSecureApiMapper = ApiMapper<EditBookSecureApi>;

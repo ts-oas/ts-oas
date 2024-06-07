@@ -101,6 +101,7 @@ export type Api = {
     params?: Record<string, any>;
     query?: Record<string, any>;
     responses: Partial<Record<HttpStatusCode, any>>;
+    security?: OpenAPIV3.SecurityRequirementObject[];
 };
 
 export type ApiMapper<T extends Api> = {
@@ -110,4 +111,5 @@ export type ApiMapper<T extends Api> = {
     params: T["params"];
     query: T["query"];
     responses: T["responses"];
+    security: T["security"];
 };
