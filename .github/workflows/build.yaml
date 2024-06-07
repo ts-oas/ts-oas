@@ -1,0 +1,55 @@
+name: CI/CD
+
+on:
+  push:
+    branches: master
+  pull_request_target:
+    branches: master
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    name: Build/Deploy Package
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      pages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - name: Setup Node Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: "npm"
+      - name: Install packages
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=$NPM_AUTH_TOKEN" >> .npmrc
+          npm install --legacy-peer-deps
+      - name: Build, Test and Generate Documentation
+        run: |
+          npm run build
+      - name: Generate Version
+        if: github.event_name == 'push'
+        uses: go-semantic-release/action@v1
+        id: semanticRelease
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          update-file: package.json
+          changelog-generator-opt: "emojis=true"
+          force-bump-patch-version: true
+          allow-initial-development-versions: ${{ inputs.in-production == 'false' }}
+      - name: Publish Package
+        if: github.event_name == 'push' && steps.semanticRelease.outputs.version != ''
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=$NPM_AUTH_TOKEN" >> .npmrc
+          npm publish
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
