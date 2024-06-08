@@ -2,7 +2,6 @@
   "openapi": "3.0.3",
   "info": { "title": "OpenAPI specification", "version": "1.0.0" },
   "components": {
-    "schemas": {},
     "securitySchemes": {
       "bearerToken": {
         "type": "http",
@@ -118,7 +117,6 @@
     "/category/book/:id": {
       "patch": {
         "operationId": "Edit Book Secure Api",
-        "security": [{ "bearerToken": [] }, { "basicAuth": [] }],
         "parameters": [
           { "name": "another_field", "in": "query", "required": true, "schema": { "type": "string" } },
           {
@@ -170,7 +168,8 @@
               }
             }
           }
-        }
+        },
+        "security": [{ "basicAuth": [] }, { "bearerToken": ["book:write", "book:read"] }]
       }
     }
   }

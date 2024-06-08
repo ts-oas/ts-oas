@@ -30,7 +30,7 @@ export type OperationObject = {
     requestBody?: RequestBodyObject;
     parameters?: ParameterObject[];
     responses?: ResponsesObject;
-    security?: Record<string, string[]> [];
+    security?: Record<string, string[]>[];
 };
 
 export type PathsObject = {
@@ -43,17 +43,14 @@ export type OpenApiSpecData = {
     security?: OpenAPIV3.SecurityRequirementObject[];
     servers?: OpenAPIV3.ServerObject[];
     externalDocs?: OpenAPIV3.ExternalDocumentationObject;
-}
+    components?: Omit<OpenAPIV3.ComponentsObject, "schemas"> & {
+        schemas?: {
+            [schemaName: string]: OpenAPIV3.ReferenceObject | Definition;
+        };
+    };
+};
 
 export type OpenApiSpec = OpenApiSpecData & {
     openapi: "3.0.3";
-    components: {
-        securitySchemes?: {
-            [securitySchemeName: string]: OpenAPIV3.SecuritySchemeObject;
-        };
-        schemas: {
-            [schemaName: string]: Definition;
-        };
-    };
     paths: PathsObject;
 };

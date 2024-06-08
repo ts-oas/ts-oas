@@ -37,6 +37,7 @@ type Api = {
     params?: Record<string, any>;
     query?: Record<string, any>;
     responses: Partial<Record<HttpStatusCode, any>>;
+    security?: Record<string, string[]>[];
 };
 ```
 

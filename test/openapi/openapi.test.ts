@@ -1,6 +1,6 @@
 import { resolve } from "path";
 import { readFileSync, writeFileSync } from "fs";
-import { expect, use } from "chai";
+import { expect } from "chai";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import TypescriptOAS, { createProgram } from "../../src";
 
@@ -37,20 +37,22 @@ describe("openapi", () => {
 
     it("should validate against SwaggerParser and json file with security", async () => {
         const tsoas = new TypescriptOAS(program, { customKeywords: ["thisIsCustom"] });
-        const spec = tsoas.getOpenApiSpec(typeNamesForSecureTests);
-
-        spec.components.securitySchemes = {
-            bearerToken: {
-                type: "http",
-                scheme: "bearer",
-                bearerFormat: "JWT",
-                description: "Bearer Token with JWT",
-            },
-            basicAuth: {
-                type: "http",
-                scheme: "basic",
-            },
-        };
+        const spec = tsoas.getOpenApiSpec(typeNamesForSecureTests, {
+            components: {
+                securitySchemes: {
+                    bearerToken: {
+                        type: "http",
+                        scheme: "bearer",
+                        bearerFormat: "JWT",
+                        description: "Bearer Token with JWT",
+                    },
+                    basicAuth: {
+                        type: "http",
+                        scheme: "basic",
+                    },
+                }
+            }
+        });
 
         // writeFileSync(resolve(__dirname, `openapi-with-security.schema.json`), JSON.stringify(spec), "utf8");
 
@@ -83,11 +85,13 @@ describe("openapi", () => {
     it("should validate other docs", async () => {
         const tags = [{ name: "abcd" }, { name: "efg" }];
         const info = { title: "custom title", version: "12.3.4", description: "this is description" };
+        const components = { schemas: { AAA: { type: "boolean" } } };
 
         const tsoas = new TypescriptOAS(program, { customKeywords: ["thisIsCustom"] });
-        const spec = tsoas.getOpenApiSpec(typeNames, { tags, info });
+        const spec = tsoas.getOpenApiSpec(typeNames, { tags, info, components });
 
         expect(spec.tags).to.equal(tags);
         expect(spec.info).to.equal(info);
+        expect(spec.components).to.equal(components);
     });
 });

@@ -1,4 +1,5 @@
 import * as ts from "typescript";
+import { OpenAPIV3 } from "openapi-types";
 import {
     Definition,
     HTTPMethod,
@@ -12,7 +13,6 @@ import {
 } from "..";
 import { SymbolRef } from "../types/common";
 import { SchemaGenerator } from "./SchemaGenerator";
-import { OpenAPIV3 } from "openapi-types";
 
 export class TypescriptOAS extends SchemaGenerator {
     private isValidObject(type: ts.Type): boolean {
@@ -81,28 +81,6 @@ export class TypescriptOAS extends SchemaGenerator {
         }
 
         return parameters;
-    }
-
-    private getSecurity(type: ts.Type): OpenAPIV3.SecurityRequirementObject[] | undefined {
-        if (this.isEmptyObj(type)) return undefined;
-        if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
-        if (this.getTypeDefinition(type).type !== "array") throw new Error("Expected to be an array");
-
-        const security: any[] = [];
-        const typeDef = this.getTypeDefinition(type);
-
-        if (!typeDef?.items) {
-            return [];
-        }
-
-        for (const itemIndex in typeDef.items) {
-            const obj = typeDef.items[itemIndex];
-            for (const property in obj.properties) {
-                security.push({ [property]: [] });
-            }
-        }
-
-        return security;
     }
 
     private getQueryParams(type: ts.Type): ParameterObject[] {
@@ -198,6 +176,36 @@ export class TypescriptOAS extends SchemaGenerator {
         return responses;
     }
 
+    private getSecurity(type: ts.Type): OpenAPIV3.SecurityRequirementObject[] | undefined {
+        if (this.isEmptyObj(type)) return undefined;
+        if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
+        if (this.getTypeDefinition(type).type !== "array") throw new Error("Expected to be an array");
+
+        const security: OpenAPIV3.SecurityRequirementObject[] = [];
+        const typeDef = this.getTypeDefinition(type);
+
+        if (!typeDef?.items) {
+            return undefined;
+        }
+
+        for (const itemIndex in typeDef.items) {
+            const obj = typeDef.items[itemIndex] as Definition;
+            for (const property in obj.properties) {
+                const propertyItems = obj.properties[property].items;
+                security.push({
+                    [property]:
+                        propertyItems instanceof Array && propertyItems?.length
+                            ? propertyItems
+                                .filter((item) => item.type === "string" && item.enum)
+                                .map((item) => item.enum![0])
+                            : [],
+                });
+            }
+        }
+
+        return security;
+    }
+
     public getOpenApiSpec(typeNames: (string | RegExp)[], specData: OpenApiSpecData = {}): OpenApiSpec {
         const filteredTypes: string[] = [];
 
@@ -217,7 +225,6 @@ export class TypescriptOAS extends SchemaGenerator {
         const spec: OpenApiSpec = {
             openapi: "3.0.3",
             ...specData,
-            components: { schemas: {} },
             paths: {},
         };
 
@@ -242,13 +249,6 @@ export class TypescriptOAS extends SchemaGenerator {
             const operation: OperationObject = {
                 operationId: type.aliasSymbol?.escapedName as string,
             };
-
-            if (securitySymbol) {
-                const securityValue = this.getSecurity(this.getTypeFromSymbol(securitySymbol));
-                if (securityValue) {
-                    operation.security = securityValue;
-                }
-            }
 
             // comments
             if (comments["ignore"]) continue;
@@ -276,13 +276,24 @@ export class TypescriptOAS extends SchemaGenerator {
             // responses
             operation.responses = this.getResponses(this.getTypeFromSymbol(responsesSymbol));
 
+            // security
+            if (securitySymbol) {
+                operation.security = this.getSecurity(this.getTypeFromSymbol(securitySymbol));
+                if (!operation.security) delete operation.security;
+            }
+
             const currPath = this.getPath(this.getTypeFromSymbol(pathSymbol));
             if (!spec.paths[currPath]) spec.paths[currPath] = {};
             spec.paths[currPath][this.getMethod(this.getTypeFromSymbol(methodSymbol)).toLowerCase()] = operation;
         }
 
         if (this.args.ref && Object.keys(this.reffedDefinitions).length > 0) {
-            spec.components.schemas = this.reffedDefinitions;
+            if (!spec.components) spec.components = {};
+
+            spec.components.schemas = {
+                ...this.reffedDefinitions,
+                ...spec.components.schemas,
+            };
         }
 
         return spec;

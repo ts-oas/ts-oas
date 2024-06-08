@@ -1,7 +1,6 @@
 {
   "openapi": "3.0.3",
   "info": { "title": "OpenAPI specification", "version": "1.0.0" },
-  "components": { "schemas": {} },
   "paths": {
     "/category/book": {
       "get": {
