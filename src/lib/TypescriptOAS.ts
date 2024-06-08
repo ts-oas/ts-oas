@@ -1,4 +1,5 @@
 import * as ts from "typescript";
+import { OpenAPIV3 } from "openapi-types";
 import {
     Definition,
     HTTPMethod,
@@ -44,6 +45,7 @@ export class TypescriptOAS extends SchemaGenerator {
 
         return type.value;
     }
+
     private getMethod(type: ts.Type): string {
         if (!type.isStringLiteral() || !Object.values(HTTPMethod).includes(<HTTPMethod>type.value)) {
             throw new TypeError("Wrong type for method");
@@ -54,7 +56,7 @@ export class TypescriptOAS extends SchemaGenerator {
 
     private getPathParams(type: ts.Type): ParameterObject[] {
         if (this.isEmptyObj(type)) return [];
-        if (!this.isValidObject(type)) throw new Error('Expected a valid Object.');
+        if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
 
         const parameters: ParameterObject[] = [];
 
@@ -83,7 +85,7 @@ export class TypescriptOAS extends SchemaGenerator {
 
     private getQueryParams(type: ts.Type): ParameterObject[] {
         if (this.isEmptyObj(type)) return [];
-        if (!this.isValidObject(type)) throw new Error('Expected a valid Object.');
+        if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
 
         const parameters: ParameterObject[] = [];
 
@@ -112,7 +114,7 @@ export class TypescriptOAS extends SchemaGenerator {
 
     private getBody(type: ts.Type, comments: Record<any, any> = {}): RequestBodyObject | null {
         if (this.isEmptyObj(type)) return null;
-        if (!this.isValidObject(type)) throw new Error('Expected a valid Object.');
+        if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
 
         const schema = this.getTypeDefinition(type, this.args.ref, undefined, undefined, type.symbol);
 
@@ -133,7 +135,7 @@ export class TypescriptOAS extends SchemaGenerator {
     }
 
     private getResponses(type: ts.Type): ResponsesObject {
-        if (!this.isValidObject(type)) throw new Error('Expected a valid Object.');
+        if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
         if (!type.getProperties().length) throw new Error('"responses" must have at least one property.');
 
         const responses: ResponsesObject = {};
@@ -145,7 +147,7 @@ export class TypescriptOAS extends SchemaGenerator {
                 throw new Error(`"${respSymbol.escapedName}" is not a valid status code.`);
             }
 
-            if (!this.isValidObject(respType)) throw new Error('Expected a valid Object.');
+            if (!this.isValidObject(respType)) throw new Error("Expected a valid Object.");
 
             const comments = {};
             this.parseCommentsIntoDefinition(respSymbol, comments, {});
@@ -174,6 +176,36 @@ export class TypescriptOAS extends SchemaGenerator {
         return responses;
     }
 
+    private getSecurity(type: ts.Type): OpenAPIV3.SecurityRequirementObject[] | undefined {
+        if (this.isEmptyObj(type)) return undefined;
+        if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
+        if (this.getTypeDefinition(type).type !== "array") throw new Error("Expected to be an array");
+
+        const security: OpenAPIV3.SecurityRequirementObject[] = [];
+        const typeDef = this.getTypeDefinition(type);
+
+        if (!typeDef?.items) {
+            return undefined;
+        }
+
+        for (const itemIndex in typeDef.items) {
+            const obj = typeDef.items[itemIndex] as Definition;
+            for (const property in obj.properties) {
+                const propertyItems = obj.properties[property].items;
+                security.push({
+                    [property]:
+                        propertyItems instanceof Array && propertyItems?.length
+                            ? propertyItems
+                                .filter((item) => item.type === "string" && item.enum)
+                                .map((item) => item.enum![0])
+                            : [],
+                });
+            }
+        }
+
+        return security;
+    }
+
     public getOpenApiSpec(typeNames: (string | RegExp)[], specData: OpenApiSpecData = {}): OpenApiSpec {
         const filteredTypes: string[] = [];
 
@@ -193,7 +225,6 @@ export class TypescriptOAS extends SchemaGenerator {
         const spec: OpenApiSpec = {
             openapi: "3.0.3",
             ...specData,
-            components: { schemas: {} },
             paths: {},
         };
 
@@ -209,6 +240,7 @@ export class TypescriptOAS extends SchemaGenerator {
             const paramsSymbol = type.getProperty("params");
             const querySymbol = type.getProperty("query");
             const responsesSymbol = type.getProperty("responses");
+            const securitySymbol = type.getProperty("security");
 
             if (!pathSymbol) throw new Error(`[${typeName}] "path" is required.`);
             if (!methodSymbol) throw new Error(`[${typeName}] "method" is required.`);
@@ -244,13 +276,24 @@ export class TypescriptOAS extends SchemaGenerator {
             // responses
             operation.responses = this.getResponses(this.getTypeFromSymbol(responsesSymbol));
 
+            // security
+            if (securitySymbol) {
+                operation.security = this.getSecurity(this.getTypeFromSymbol(securitySymbol));
+                if (!operation.security) delete operation.security;
+            }
+
             const currPath = this.getPath(this.getTypeFromSymbol(pathSymbol));
             if (!spec.paths[currPath]) spec.paths[currPath] = {};
             spec.paths[currPath][this.getMethod(this.getTypeFromSymbol(methodSymbol)).toLowerCase()] = operation;
         }
 
         if (this.args.ref && Object.keys(this.reffedDefinitions).length > 0) {
-            spec.components.schemas = this.reffedDefinitions;
+            if (!spec.components) spec.components = {};
+
+            spec.components.schemas = {
+                ...this.reffedDefinitions,
+                ...spec.components.schemas,
+            };
         }
 
         return spec;

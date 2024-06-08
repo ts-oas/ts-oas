@@ -4,7 +4,7 @@ import { HttpStatusCode } from "./enums/HttpStatusCode.enum";
 import { HTTPMethod } from "./enums/HTTPMethod.enum";
 
 export type AnnotationKeywords = {
-    [prop: string]: boolean | 'custom';
+    [prop: string]: boolean | "custom";
 };
 
 export type Options = {
@@ -85,7 +85,6 @@ export interface Definition extends Omit<OpenAPIV3.BaseSchemaObject, RedefinedFi
     };
     $ref?: string;
 }
-const abc: Definition = {};
 
 export type SymbolRef = {
     name: string;
@@ -101,6 +100,7 @@ export type Api = {
     params?: Record<string, any>;
     query?: Record<string, any>;
     responses: Partial<Record<HttpStatusCode, any>>;
+    security?: Record<string, string[]>[];
 };
 
 export type ApiMapper<T extends Api> = {
@@ -110,4 +110,5 @@ export type ApiMapper<T extends Api> = {
     params: T["params"];
     query: T["query"];
     responses: T["responses"];
+    security: T["security"];
 };

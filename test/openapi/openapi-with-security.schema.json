@@ -1,6 +1,17 @@
 {
   "openapi": "3.0.3",
   "info": { "title": "OpenAPI specification", "version": "1.0.0" },
+  "components": {
+    "securitySchemes": {
+      "bearerToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer Token with JWT"
+      },
+      "basicAuth": { "type": "http", "scheme": "basic" }
+    }
+  },
   "paths": {
     "/category/book": {
       "get": {
@@ -105,7 +116,7 @@
     },
     "/category/book/:id": {
       "patch": {
-        "operationId": "EditBookApi",
+        "operationId": "Edit Book Secure Api",
         "parameters": [
           { "name": "another_field", "in": "query", "required": true, "schema": { "type": "string" } },
           {
@@ -157,7 +168,8 @@
               }
             }
           }
-        }
+        },
+        "security": [{ "basicAuth": [] }, { "bearerToken": ["book:write", "book:read"] }]
       }
     }
   }
