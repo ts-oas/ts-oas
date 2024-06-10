@@ -166,11 +166,13 @@ export class TypescriptOAS extends SchemaGenerator {
                 responses[respSymbol.escapedName as string]["description"] = "";
             }
 
-            responses[respSymbol.escapedName as string].content = {
-                [contentType]: {
-                    schema: this.getTypeDefinition(respType, this.args.ref, undefined, undefined, respType.aliasSymbol),
-                },
-            };
+            if (this.getTypeFromSymbol(respSymbol).flags !== ts.TypeFlags.Never) {
+                responses[respSymbol.escapedName as string].content = {
+                    [contentType]: {
+                        schema: this.getTypeDefinition(respType, this.args.ref, undefined, undefined, respType.aliasSymbol),
+                    },
+                };
+            }
         }
 
         return responses;
@@ -196,8 +198,8 @@ export class TypescriptOAS extends SchemaGenerator {
                     [property]:
                         propertyItems instanceof Array && propertyItems?.length
                             ? propertyItems
-                                .filter((item) => item.type === "string" && item.enum)
-                                .map((item) => item.enum![0])
+                                  .filter((item) => item.type === "string" && item.enum)
+                                  .map((item) => item.enum![0])
                             : [],
                 });
             }

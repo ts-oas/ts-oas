@@ -62,6 +62,10 @@ export type GetBarAPI = ApiMapper<{
          * @contentType application/json
          */
         "200": Bar;
+        /** 
+         * No Content 
+         */
+        "204": never;
         "404": { success: false };
     };
 }>;

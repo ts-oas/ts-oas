@@ -1,6 +1,5 @@
 {
   "openapi": "3.0.3",
-  "info": { "title": "OpenAPI specification", "version": "1.0.0" },
   "components": {
     "securitySchemes": {
       "bearerToken": {
@@ -12,6 +11,7 @@
       "basicAuth": { "type": "http", "scheme": "basic" }
     }
   },
+  "info": { "title": "OpenAPI specification", "version": "1.0.0" },
   "paths": {
     "/category/book": {
       "get": {
@@ -167,7 +167,8 @@
                 }
               }
             }
-          }
+          },
+          "204": { "description": "No Content" }
         },
         "security": [{ "basicAuth": [] }, { "bearerToken": ["book:write", "book:read"] }]
       }

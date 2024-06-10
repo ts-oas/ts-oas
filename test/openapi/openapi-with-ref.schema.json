@@ -1,78 +1,6 @@
 {
   "openapi": "3.0.3",
   "info": { "title": "OpenAPI specification", "version": "1.0.0" },
-  "components": {
-    "schemas": {
-      "GetAllBooksQuery": {
-        "type": "object",
-        "properties": {
-          "query-status": {
-            "x-thisIsCustom": "value",
-            "type": "array",
-            "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
-          }
-        }
-      },
-      "Book": {
-        "type": "object",
-        "properties": {
-          "id": { "description": "this is id.", "type": "number" },
-          "title": {
-            "default": "sample title",
-            "anyOf": [{ "type": "object", "nullable": true }, { "type": "string" }]
-          },
-          "date": {
-            "format": "date",
-            "anyOf": [
-              { "type": "object", "nullable": true },
-              { "type": "string", "format": "date-time" }
-            ]
-          },
-          "meta-data": { "type": "object" },
-          "statuses": { "type": "array", "items": { "enum": ["four", "one", "three", "two"], "type": "string" } }
-        },
-        "required": ["id", "meta-data", "statuses", "title"]
-      },
-      "GetAllBooksQueryRes": { "type": "array", "items": { "$ref": "#/components/schemas/Book" } },
-      "ResponseUnsuccessData": {
-        "type": "object",
-        "properties": { "msg": { "type": "string", "enum": ["This is unsuccess."] } },
-        "required": ["msg"]
-      },
-      "EditBookQuery": {
-        "type": "object",
-        "properties": {
-          "another_field": { "type": "string" },
-          "query-status": {
-            "x-thisIsCustom": "value",
-            "type": "array",
-            "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
-          }
-        },
-        "required": ["another_field"]
-      },
-      "EditBookRes": {
-        "type": "object",
-        "properties": {
-          "id": { "description": "this is id.", "type": "number" },
-          "title": {
-            "default": "sample title",
-            "anyOf": [{ "type": "object", "nullable": true }, { "type": "string" }]
-          },
-          "date": {
-            "format": "date",
-            "anyOf": [
-              { "type": "object", "nullable": true },
-              { "type": "string", "format": "date-time" }
-            ]
-          },
-          "meta-data": { "type": "object" },
-          "statuses": { "type": "array", "items": { "enum": ["four", "one", "three", "two"], "type": "string" } }
-        },
-        "required": ["id", "meta-data", "statuses", "title"]
-      }
-    }
-  },
   "paths": {
     "/category/book": {
       "get": {
@@ -173,8 +101,81 @@
                 }
               }
             }
+          },
+          "204": { "description": "No Content" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "GetAllBooksQuery": {
+        "type": "object",
+        "properties": {
+          "query-status": {
+            "x-thisIsCustom": "value",
+            "type": "array",
+            "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
           }
         }
+      },
+      "GetAllBooksQueryRes": { "type": "array", "items": { "$ref": "#/components/schemas/Book" } },
+      "Book": {
+        "type": "object",
+        "properties": {
+          "id": { "description": "this is id.", "type": "number" },
+          "title": {
+            "default": "sample title",
+            "anyOf": [{ "type": "object", "nullable": true }, { "type": "string" }]
+          },
+          "date": {
+            "format": "date",
+            "anyOf": [
+              { "type": "object", "nullable": true },
+              { "type": "string", "format": "date-time" }
+            ]
+          },
+          "meta-data": { "type": "object" },
+          "statuses": { "type": "array", "items": { "enum": ["four", "one", "three", "two"], "type": "string" } }
+        },
+        "required": ["id", "meta-data", "statuses", "title"]
+      },
+      "ResponseUnsuccessData": {
+        "type": "object",
+        "properties": { "msg": { "type": "string", "enum": ["This is unsuccess."] } },
+        "required": ["msg"]
+      },
+      "EditBookQuery": {
+        "type": "object",
+        "properties": {
+          "another_field": { "type": "string" },
+          "query-status": {
+            "x-thisIsCustom": "value",
+            "type": "array",
+            "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
+          }
+        },
+        "required": ["another_field"]
+      },
+      "EditBookRes": {
+        "type": "object",
+        "properties": {
+          "id": { "description": "this is id.", "type": "number" },
+          "title": {
+            "default": "sample title",
+            "anyOf": [{ "type": "object", "nullable": true }, { "type": "string" }]
+          },
+          "date": {
+            "format": "date",
+            "anyOf": [
+              { "type": "object", "nullable": true },
+              { "type": "string", "format": "date-time" }
+            ]
+          },
+          "meta-data": { "type": "object" },
+          "statuses": { "type": "array", "items": { "enum": ["four", "one", "three", "two"], "type": "string" } }
+        },
+        "required": ["id", "meta-data", "statuses", "title"]
       }
     }
   }
