@@ -167,7 +167,8 @@
                 }
               }
             }
-          }
+          },
+          "204": { "description": "No Content" }
         },
         "security": [{ "basicAuth": [] }, { "bearerToken": ["book:write", "book:read"] }]
       }

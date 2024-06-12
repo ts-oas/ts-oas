@@ -49,7 +49,7 @@ type GetAllBooksApi = ApiMapper<{
 interface EditBookQuery extends GetAllBooksQuery {
     another_field: string;
 }
-interface EditBookRes extends Book { }
+interface EditBookRes extends Book {}
 
 type EditBookApi = {
     path: "/category/book/:id";
@@ -57,7 +57,13 @@ type EditBookApi = {
     param: { id: number };
     query: EditBookQuery;
     body: {};
-    responses: { "200": Response<EditBookRes> };
+    responses: {
+        "200": Response<EditBookRes>;
+        /**
+         * No Content
+         */
+        "204": never;
+    };
 };
 
 type EditBookSecureApi = {
@@ -66,7 +72,13 @@ type EditBookSecureApi = {
     param: { id: number };
     query: EditBookQuery;
     body: {};
-    responses: { "200": Response<EditBookRes> };
+    responses: {
+        "200": Response<EditBookRes>;
+        /**
+         * No Content
+         */
+        "204": never;
+    };
     security: [{ basicAuth: [] }, { bearerToken: ["book:write", "book:read"] }];
 };
 

@@ -166,11 +166,13 @@ export class TypescriptOAS extends SchemaGenerator {
                 responses[respSymbol.escapedName as string]["description"] = "";
             }
 
-            responses[respSymbol.escapedName as string].content = {
-                [contentType]: {
-                    schema: this.getTypeDefinition(respType, this.args.ref, undefined, undefined, respType.aliasSymbol),
-                },
-            };
+            if (respType.flags !== ts.TypeFlags.Never) {
+                responses[respSymbol.escapedName as string].content = {
+                    [contentType]: {
+                        schema: this.getTypeDefinition(respType, this.args.ref, undefined, undefined, respType.aliasSymbol),
+                    },
+                };
+            }
         }
 
         return responses;
@@ -196,8 +198,8 @@ export class TypescriptOAS extends SchemaGenerator {
                     [property]:
                         propertyItems instanceof Array && propertyItems?.length
                             ? propertyItems
-                                .filter((item) => item.type === "string" && item.enum)
-                                .map((item) => item.enum![0])
+                                  .filter((item) => item.type === "string" && item.enum)
+                                  .map((item) => item.enum![0])
                             : [],
                 });
             }
@@ -220,11 +222,11 @@ export class TypescriptOAS extends SchemaGenerator {
         this.resetSchemaSpecificProperties();
         this.refPath = "#/components/schemas/";
 
-        if (!specData.info) specData.info = { title: "OpenAPI specification", version: "1.0.0" };
-
         const spec: OpenApiSpec = {
             openapi: "3.0.3",
+            info: specData.info || { title: "OpenAPI specification", version: "1.0.0" },
             ...specData,
+            components: specData.components,
             paths: {},
         };
 
@@ -294,6 +296,8 @@ export class TypescriptOAS extends SchemaGenerator {
                 ...this.reffedDefinitions,
                 ...spec.components.schemas,
             };
+        } else if (spec.components === undefined){
+            delete spec.components;
         }
 
         return spec;
