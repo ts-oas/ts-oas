@@ -7,10 +7,12 @@ import TypescriptOAS, { createProgram } from "../../src";
 const openapiFile = JSON.parse(readFileSync(resolve(__dirname, `openapi.schema.json`), "utf8"));
 const openapiWithRefFile = JSON.parse(readFileSync(resolve(__dirname, `openapi-with-ref.schema.json`), "utf8"));
 const openApiWithSecurity = JSON.parse(readFileSync(resolve(__dirname, `openapi-with-security.schema.json`), "utf-8"));
+const openApiWithDefaultSecurity = JSON.parse(readFileSync(resolve(__dirname, `openapi-with-default-security.schema.json`), "utf-8"));
 
 const typeNames = ["GetAllBooksApi", "EditBookApi"];
 const typeNamesForMapperTest = ["GetAllBooksApi", "EditBookApiWithMapper"];
 const typeNamesForSecureTests = ["GetAllBooksApi", "EditBookSecureApiMapper"];
+const typeNamesForDefaultSecureTests = ["GetAllUnsecureBooksApi", "EditBookApiWithMapper"];
 
 const program = createProgram(["openapi.ts"], { strictNullChecks: true }, resolve(__dirname));
 
@@ -57,6 +59,32 @@ describe("openapi", () => {
         // writeFileSync(resolve(__dirname, `openapi-with-security.schema.json`), JSON.stringify(spec), "utf8");
 
         expect(spec).to.deep.equal(openApiWithSecurity);
+        await SwaggerParser.validate(spec as any, {});
+    });
+
+    it("should validate against SwaggerParser and json file with default security for all apis", async () => {
+        const tsoas = new TypescriptOAS(program, { customKeywords: ["thisIsCustom"] });
+        const spec = tsoas.getOpenApiSpec(typeNamesForDefaultSecureTests, {
+            security: [{ basicAuth: [] }, { bearerToken: ["book:write", "book:read"] }],
+            components: {
+                securitySchemes: {
+                    bearerToken: {
+                        type: "http",
+                        scheme: "bearer",
+                        bearerFormat: "JWT",
+                        description: "Bearer Token with JWT",
+                    },
+                    basicAuth: {
+                        type: "http",
+                        scheme: "basic",
+                    },
+                }
+            }
+        });
+
+        // writeFileSync(resolve(__dirname, `openapi-with-default-security.schema.json`), JSON.stringify(spec), "utf8");
+
+        expect(spec).to.deep.equal(openApiWithDefaultSecurity);
         await SwaggerParser.validate(spec as any, {});
     });
 

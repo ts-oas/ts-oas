@@ -186,9 +186,7 @@ export class TypescriptOAS extends SchemaGenerator {
         const security: OpenAPIV3.SecurityRequirementObject[] = [];
         const typeDef = this.getTypeDefinition(type);
 
-        if (!typeDef?.items) {
-            return undefined;
-        }
+        if (typeDef?.items === undefined) { return []; }
 
         for (const itemIndex in typeDef.items) {
             const obj = typeDef.items[itemIndex] as Definition;
@@ -198,8 +196,8 @@ export class TypescriptOAS extends SchemaGenerator {
                     [property]:
                         propertyItems instanceof Array && propertyItems?.length
                             ? propertyItems
-                                  .filter((item) => item.type === "string" && item.enum)
-                                  .map((item) => item.enum![0])
+                                .filter((item) => item.type === "string" && item.enum)
+                                .map((item) => item.enum![0])
                             : [],
                 });
             }
@@ -281,7 +279,7 @@ export class TypescriptOAS extends SchemaGenerator {
             // security
             if (securitySymbol) {
                 operation.security = this.getSecurity(this.getTypeFromSymbol(securitySymbol));
-                if (!operation.security) delete operation.security;
+                if (operation.security === undefined) delete operation.security;
             }
 
             const currPath = this.getPath(this.getTypeFromSymbol(pathSymbol));
@@ -296,7 +294,7 @@ export class TypescriptOAS extends SchemaGenerator {
                 ...this.reffedDefinitions,
                 ...spec.components.schemas,
             };
-        } else if (spec.components === undefined){
+        } else if (spec.components === undefined) {
             delete spec.components;
         }
 
