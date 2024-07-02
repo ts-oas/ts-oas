@@ -1,0 +1,174 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "OpenAPI specification", "version": "1.0.0" },
+  "security": [{ "basicAuth": [] }, { "bearerToken": ["book:write", "book:read"] }],
+  "components": {
+    "securitySchemes": {
+      "bearerToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer Token with JWT"
+      },
+      "basicAuth": { "type": "http", "scheme": "basic" }
+    }
+  },
+  "paths": {
+    "/category/book": {
+      "get": {
+        "operationId": "GetAllUnsecureBooksApi",
+        "parameters": [
+          {
+            "name": "query-status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "x-thisIsCustom": "value",
+              "type": "array",
+              "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "description": "this is id.", "type": "number" },
+                          "title": {
+                            "default": "sample title",
+                            "anyOf": [{ "type": "object", "nullable": true }, { "type": "string" }]
+                          },
+                          "date": {
+                            "format": "date",
+                            "anyOf": [
+                              { "type": "object", "nullable": true },
+                              { "type": "string", "format": "date-time" }
+                            ]
+                          },
+                          "meta-data": { "type": "object" },
+                          "statuses": {
+                            "type": "array",
+                            "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
+                          }
+                        },
+                        "required": ["id", "meta-data", "statuses", "title"]
+                      }
+                    }
+                  },
+                  "required": ["data", "success"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": { "msg": { "type": "string", "enum": ["This is unsuccess."] } },
+                      "required": ["msg"]
+                    }
+                  },
+                  "required": ["data", "success"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Oh! Internal Error!",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": { "msg": { "type": "string", "enum": ["This is unsuccess."] } },
+                      "required": ["msg"]
+                    }
+                  },
+                  "required": ["data", "success"]
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/category/book/:id": {
+      "patch": {
+        "operationId": "EditBookApi",
+        "parameters": [
+          { "name": "another_field", "in": "query", "required": true, "schema": { "type": "string" } },
+          {
+            "name": "query-status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "x-thisIsCustom": "value",
+              "type": "array",
+              "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "description": "this is id.", "type": "number" },
+                        "title": {
+                          "default": "sample title",
+                          "anyOf": [{ "type": "object", "nullable": true }, { "type": "string" }]
+                        },
+                        "date": {
+                          "format": "date",
+                          "anyOf": [
+                            { "type": "object", "nullable": true },
+                            { "type": "string", "format": "date-time" }
+                          ]
+                        },
+                        "meta-data": { "type": "object" },
+                        "statuses": {
+                          "type": "array",
+                          "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
+                        }
+                      },
+                      "required": ["id", "meta-data", "statuses", "title"]
+                    }
+                  },
+                  "required": ["data", "success"]
+                }
+              }
+            }
+          },
+          "204": { "description": "No Content" }
+        }
+      }
+    }
+  }
+}

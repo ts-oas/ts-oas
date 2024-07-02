@@ -45,6 +45,7 @@ type GetAllBooksApi = ApiMapper<{
     query: GetAllBooksQuery;
     responses: { "200": Response<GetAllBooksQueryRes> } & DefaultResp;
 }>;
+type GetAllUnsecureBooksApi = GetAllBooksApi & {security: []};
 
 interface EditBookQuery extends GetAllBooksQuery {
     another_field: string;
