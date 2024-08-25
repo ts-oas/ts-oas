@@ -11,7 +11,6 @@ import {
     RequestBodyObject,
     ResponsesObject,
 } from "..";
-import { SymbolRef } from "../types/common";
 import { SchemaGenerator } from "./SchemaGenerator";
 
 export class TypescriptOAS extends SchemaGenerator {
@@ -211,9 +210,9 @@ export class TypescriptOAS extends SchemaGenerator {
 
         typeNames.forEach((typeName) => {
             if (typeName instanceof RegExp) {
-                filteredTypes.push(...Object.keys(this.allSymbols).filter((value) => (typeName as RegExp).test(value)));
+                filteredTypes.push(...Object.keys(this.symbols).filter((value) => (typeName as RegExp).test(value)));
             } else {
-                filteredTypes.push(...Object.keys(this.allSymbols).filter((value) => typeName === value));
+                filteredTypes.push(...Object.keys(this.symbols).filter((value) => typeName === value));
             }
         });
 
@@ -229,7 +228,7 @@ export class TypescriptOAS extends SchemaGenerator {
         };
 
         for (const typeName of filteredTypes) {
-            const type = this.allSymbols[typeName];
+            const type = this.symbols[typeName];
 
             const comments = {};
             this.parseCommentsIntoDefinition(type.aliasSymbol!, comments, {});
@@ -309,9 +308,9 @@ export class TypescriptOAS extends SchemaGenerator {
 
         typeNames.forEach((typeName) => {
             if (typeName instanceof RegExp) {
-                filteredTypes.push(...Object.keys(this.allSymbols).filter((value) => (typeName as RegExp).test(value)));
+                filteredTypes.push(...Object.keys(this.symbols).filter((value) => (typeName as RegExp).test(value)));
             } else {
-                filteredTypes.push(...Object.keys(this.allSymbols).filter((value) => typeName === value));
+                filteredTypes.push(...Object.keys(this.symbols).filter((value) => typeName === value));
             }
         });
 
@@ -323,27 +322,11 @@ export class TypescriptOAS extends SchemaGenerator {
         this.refPath = "#/definitions/";
 
         for (const symbolName of filteredTypes) {
-            root.definitions[symbolName] = this.getTypeDefinition(this.allSymbols[symbolName], this.args.ref);
+            root.definitions[symbolName] = this.getTypeDefinition(this.symbols[symbolName], this.args.ref);
         }
         if (this.args.ref && Object.keys(this.reffedDefinitions).length > 0) {
             root.definitions = { ...root.definitions, ...this.reffedDefinitions };
         }
         return root.definitions;
-    }
-
-    public getSymbols(typeNames?: (string | RegExp)[]): SymbolRef[] {
-        if (!typeNames || !typeNames.length) {
-            return this.symbols;
-        }
-        const filteredTypes: SymbolRef[] = [];
-
-        typeNames.forEach((typeName) => {
-            if (typeName instanceof RegExp) {
-                filteredTypes.push(...this.symbols.filter((symbol) => (typeName as RegExp).test(symbol.typeName)));
-            } else {
-                filteredTypes.push(...this.symbols.filter((symbol) => typeName === symbol.typeName));
-            }
-        });
-        return this.symbols.filter((symbol) => symbol.typeName);
     }
 }
