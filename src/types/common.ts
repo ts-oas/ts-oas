@@ -1,4 +1,3 @@
-import * as ts from "typescript";
 import { OpenAPIV3 } from "openapi-types";
 import { HttpStatusCode } from "./enums/HttpStatusCode.enum";
 import { HTTPMethod } from "./enums/HTTPMethod.enum";
@@ -85,13 +84,6 @@ export interface Definition extends Omit<OpenAPIV3.BaseSchemaObject, RedefinedFi
     };
     $ref?: string;
 }
-
-export type SymbolRef = {
-    name: string;
-    typeName: string;
-    fullyQualifiedName: string;
-    symbol: ts.Symbol;
-};
 
 export type Api = {
     path: string;

@@ -2,20 +2,19 @@ import * as path from "path";
 import { createHash } from "crypto";
 import * as ts from "typescript";
 import { Definition, Options } from "..";
-import { AnnotationKeywords, MetaDefinitionFields, PrimitiveType, SymbolRef } from "../types/common";
+import { AnnotationKeywords, MetaDefinitionFields, PrimitiveType } from "../types/common";
 import { openApiKeywords, refKeywords, REGEX_FILE_NAME_OR_SPACE, REGEX_REQUIRE, validationKeywords } from "../constant";
 
 const vm = require("vm");
 
 export class SchemaGenerator {
     constructor(program: ts.Program, options: Options = {}) {
-        const { symbols, allSymbols, inheritingTypes, typeChecker, settings } = this.buildSchemaGenerator(
+        const { symbols, inheritingTypes, typeChecker, settings } = this.buildSchemaGenerator(
             program,
             options
         );
 
         this.symbols = symbols;
-        this.allSymbols = allSymbols;
         this.inheritingTypes = inheritingTypes;
         this.tc = typeChecker;
         this.args = settings;
@@ -27,17 +26,11 @@ export class SchemaGenerator {
     }
     protected args: Options;
     protected tc: ts.TypeChecker;
-
-    /**
-     * Holds all symbols within a custom SymbolRef object, containing useful
-     * information.
-     */
-    protected symbols: SymbolRef[];
     /**
      * All types for declarations of classes, interfaces, enums, and type aliases
      * defined in all TS files.
      */
-    protected allSymbols: { [name: string]: ts.Type };
+    protected symbols: { [name: string]: ts.Type };
     /**
      * Maps from the names of base types to the names of the types that inherit from
      * them.
@@ -113,17 +106,104 @@ export class SchemaGenerator {
             }
         }
 
-        const symbols: SymbolRef[] = [];
-        const allSymbols: { [name: string]: ts.Type } = {};
+        const rootSymbolNames = new Set<string>();
+        const symbols: { [name: string]: ts.Type } = {};
         const inheritingTypes: { [baseName: string]: string[] } = {};
 
         const typeChecker = program.getTypeChecker();
         const workingDir = program.getCurrentDirectory();
 
+        program.getRootFileNames().forEach(function (sourceFileName, _sourceFileIdx) {
+            const sourceFile = program.getSourceFile(sourceFileName);
+
+            function inspect(node: ts.Node) {
+                // Collect defined symbols (whether exported or not)
+                if (ts.isVariableDeclaration(node) || ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node) || ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)) {
+                    const symbol = typeChecker.getSymbolAtLocation(node.name!);
+                    if (symbol) {
+                        rootSymbolNames.add(symbol.getName());
+                    }
+                }
+
+                // Collect imported symbols
+                if (ts.isImportDeclaration(node) && node.importClause) {
+                    const importClause = node.importClause;
+
+                    if (importClause.name) {
+                        // Default import
+                        const symbol = typeChecker.getSymbolAtLocation(importClause.name);
+                        if (symbol) {
+                            rootSymbolNames.add(symbol.getName());
+                        }
+                    }
+
+                    if (importClause.namedBindings) {
+                        if (ts.isNamedImports(importClause.namedBindings)) {
+                            importClause.namedBindings.elements.forEach(element => {
+                                const symbol = typeChecker.getSymbolAtLocation(element.name);
+                                if (symbol) {
+                                    rootSymbolNames.add(symbol.getName());
+                                }
+                            });
+                        } else if (ts.isNamespaceImport(importClause.namedBindings)) {
+                            const symbol = typeChecker.getSymbolAtLocation(importClause.namedBindings.name);
+                            if (symbol) {
+                                rootSymbolNames.add(symbol.getName());
+                            }
+                        }
+                    }
+                }
+
+                // Collect exported symbols
+                if (ts.isExportDeclaration(node) && node.moduleSpecifier) {
+                    const moduleSpecifier = (node.moduleSpecifier as ts.StringLiteral).text;
+        
+                    // Resolve the module path
+                    const resolvedModule = ts.resolveModuleName(
+                        moduleSpecifier,
+                        sourceFile!.fileName,
+                        program.getCompilerOptions(),
+                        ts.sys
+                    );
+        
+                    const resolvedFileName = resolvedModule.resolvedModule?.resolvedFileName;
+        
+                    if (resolvedFileName) {
+                        const moduleSourceFile = program.getSourceFile(resolvedFileName);
+        
+                        if (moduleSourceFile) {
+                            const moduleSymbol = typeChecker.getSymbolAtLocation(moduleSourceFile);
+        
+                            if (moduleSymbol) {
+                                // Check if it's a wildcard export or named exports
+                                if (!node.exportClause) {
+                                    // Wildcard export: export * from "..."
+                                    const exports = typeChecker.getExportsOfModule(moduleSymbol);
+                                    exports.forEach((exportItem) => {
+                                        rootSymbolNames.add(exportItem.getName())
+                                    });
+                                } else if (ts.isNamedExports(node.exportClause)) {
+                                    // Named exports: export { ... } from "..."
+                                    node.exportClause.elements.forEach((element) => {
+                                        const symbol = program.getTypeChecker().getExportSpecifierLocalTargetSymbol(element);
+                                        if (symbol) {
+                                            rootSymbolNames.add(symbol.getName());
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                ts.forEachChild(node, inspect);
+            }
+            inspect(sourceFile!);
+        });
+
         program.getSourceFiles().forEach((sourceFile, _sourceFileIdx) => {
             const relativePath = path.relative(workingDir, sourceFile.fileName);
 
-            function inspect(node: ts.Node, tc: ts.TypeChecker) {
+            function inspect(node: ts.Node) {
                 if (
                     node.kind === ts.SyntaxKind.ClassDeclaration ||
                     node.kind === ts.SyntaxKind.InterfaceDeclaration ||
@@ -131,34 +211,37 @@ export class SchemaGenerator {
                     node.kind === ts.SyntaxKind.TypeAliasDeclaration
                 ) {
                     const symbol: ts.Symbol = (<any>node).symbol;
-                    const nodeType = tc.getTypeAtLocation(node);
-                    const fullyQualifiedName = tc.getFullyQualifiedName(symbol);
+
+                    if (!rootSymbolNames.has(symbol.getName())) {
+                        return;
+                    };
+
+                    const nodeType = typeChecker.getTypeAtLocation(node);
+                    const fullyQualifiedName = typeChecker.getFullyQualifiedName(symbol);
                     const typeName = fullyQualifiedName.replace(/".*"\./, "");
                     const name = !settings.uniqueNames
                         ? typeName
                         : `${typeName}.${this.generateHashOfNode(node, relativePath)}`;
 
-                    symbols.push({ name, typeName, fullyQualifiedName, symbol });
-
-                    allSymbols[name] = nodeType;
+                    symbols[name] = nodeType;
 
                     const baseTypes = nodeType.getBaseTypes() || [];
 
                     baseTypes.forEach((baseType) => {
-                        var baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+                        var baseName = typeChecker.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
                         if (!inheritingTypes[baseName]) {
                             inheritingTypes[baseName] = [];
                         }
                         inheritingTypes[baseName].push(name);
                     });
                 } else {
-                    ts.forEachChild(node, (n) => inspect(n, tc));
+                    ts.forEachChild(node, inspect);
                 }
             }
-            inspect(sourceFile, typeChecker);
+            inspect(sourceFile);
         });
 
-        return { symbols, allSymbols, inheritingTypes, typeChecker, settings };
+        return { symbols, inheritingTypes, typeChecker, settings };
     }
 
     protected getDefaultOptions(): Required<Omit<Options, "schemaProcessor">> {
@@ -794,7 +877,7 @@ export class SchemaGenerator {
 
         if (modifierFlags & ts.ModifierFlags.Abstract && this.inheritingTypes[fullName]) {
             const oneOf = this.inheritingTypes[fullName].map((typename) => {
-                return this.getTypeDefinition(this.allSymbols[typename]);
+                return this.getTypeDefinition(this.symbols[typename]);
             });
 
             definition.oneOf = oneOf;
