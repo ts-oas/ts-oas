@@ -1146,12 +1146,18 @@ export class SchemaGenerator {
                 } else if (
                     symbol &&
                     symbol.flags & ts.SymbolFlags.TypeLiteral &&
-                    symbol.members!.size === 0 &&
-                    !(node && node.kind === ts.SyntaxKind.MappedType)
+                    symbol.members!.size === 0
                 ) {
                     // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
                     definition.type = "object";
                     definition.properties = {};
+
+                    // Check if it is a mapped type (eg Record<keyType, valueType>)
+                    // type.indexInfos contains schemas for keys and values of mapped types
+                    const indexInfo = ('indexInfos' in typ ? typ.indexInfos as ts.IndexInfo[] : []).at(0)
+                    if (node && node.kind === ts.SyntaxKind.MappedType && indexInfo) {
+                        definition.additionalProperties = this.getTypeDefinition(indexInfo.type, asRef, unionModifier, prop, reffedType)
+                    }
                 } else {
                     this.getClassDefinition(typ, definition);
                 }
