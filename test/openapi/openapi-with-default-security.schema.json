@@ -55,7 +55,13 @@
                               { "type": "string", "format": "date-time" }
                             ]
                           },
-                          "meta-data": { "type": "object" },
+                          "meta-data": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "string"
+                            },
+                            "properties": {}
+                          },
                           "statuses": {
                             "type": "array",
                             "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
@@ -152,7 +158,13 @@
                             { "type": "string", "format": "date-time" }
                           ]
                         },
-                        "meta-data": { "type": "object" },
+                        "meta-data": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "properties": {}
+                        },
                         "statuses": {
                           "type": "array",
                           "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
