@@ -1128,6 +1128,8 @@ export class SchemaGenerator {
                 }
             }
             const node = symbol?.getDeclarations() !== undefined ? symbol.getDeclarations()![0] : null;
+            // Supports checking for members in remapped types like { [K in keyof X]: X[K] }
+            const members = 'members' in typ ? <ts.SymbolTable> typ.members : symbol?.members
             // console.log("getTypeDefinition");
             // console.log(definition);
             if (definition.type === undefined) {
@@ -1146,7 +1148,7 @@ export class SchemaGenerator {
                 } else if (
                     symbol &&
                     symbol.flags & ts.SymbolFlags.TypeLiteral &&
-                    symbol.members!.size === 0
+                    members && members.size === 0
                 ) {
                     // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
                     definition.type = "object";
