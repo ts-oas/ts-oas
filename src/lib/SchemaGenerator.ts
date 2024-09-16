@@ -1087,7 +1087,9 @@ export class SchemaGenerator {
                     this.args.ref &&
                     reffedType?.escapedName &&
                     reffedType.escapedName !== "__type" &&
-                    !typ.aliasTypeArguments
+                    !typ.aliasTypeArguments &&
+                    // some fullTypeNames are type-arguments and aren't actually names!
+                    /^[0-9A-Za-z._]+$/.exec(fullTypeName)
                 ) {
                     asRef = true;
                 }

@@ -18,7 +18,9 @@ type DefaultResp = {
     /**
      * Oh! Internal Error!
      */
-    "500": Response<ResponseUnsuccessData>;
+    "500": Response<{
+        msg: "This is unsuccess.";
+    }>;
 };
 // <------------------------------------------------------------>
 

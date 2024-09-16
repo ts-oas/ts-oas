@@ -144,7 +144,11 @@
                   "type": "object",
                   "properties": {
                     "success": { "type": "boolean" },
-                    "data": { "$ref": "#/components/schemas/ResponseUnsuccessData" }
+                    "data": {
+                      "type": "object",
+                      "properties": { "msg": { "type": "string", "enum": ["This is unsuccess."] } },
+                      "required": ["msg"]
+                    }
                   },
                   "required": ["data", "success"]
                 }
