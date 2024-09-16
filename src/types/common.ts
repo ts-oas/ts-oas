@@ -6,6 +6,8 @@ export type AnnotationKeywords = {
     [prop: string]: boolean | "custom";
 };
 
+export type UnionModifier = 'anyOf' | 'oneOf';
+
 export type Options = {
     /**
      * Uses schemas as references, corresponding to their type references.
@@ -42,6 +44,11 @@ export type Options = {
      * @default true
      */
     nullableKeyword?: boolean;
+    /**
+     * Default schema type for union types..
+     * @default "anyOf"
+     */
+    defaultUnionModifier?: UnionModifier;
     /**
      * Default content type for all the operations. Can be overwritten case by case (See the annotations section.).
      * @default "* /*"

@@ -2,10 +2,12 @@ import * as path from "path";
 import { createHash } from "crypto";
 import * as ts from "typescript";
 import { Definition, Options } from "..";
-import { AnnotationKeywords, MetaDefinitionFields, PrimitiveType } from "../types/common";
+import { AnnotationKeywords, MetaDefinitionFields, PrimitiveType, UnionModifier } from "../types/common";
 import { openApiKeywords, refKeywords, REGEX_FILE_NAME_OR_SPACE, REGEX_REQUIRE, validationKeywords } from "../constant";
 
 const vm = require("vm");
+
+type RequiredOptions = Required<Omit<Options, 'schemaProcessor'>> & Pick<Options, 'schemaProcessor'>
 
 export class SchemaGenerator {
     constructor(program: ts.Program, options: Options = {}) {
@@ -24,7 +26,7 @@ export class SchemaGenerator {
             ...this.args.customKeywords?.reduce((acc, word) => ({ ...acc, [word]: "custom" }), {}),
         };
     }
-    protected args: Options;
+    protected args: RequiredOptions;
     protected tc: ts.TypeChecker;
     /**
      * All types for declarations of classes, interfaces, enums, and type aliases
@@ -157,7 +159,7 @@ export class SchemaGenerator {
                 // Collect exported symbols
                 if (ts.isExportDeclaration(node) && node.moduleSpecifier) {
                     const moduleSpecifier = (node.moduleSpecifier as ts.StringLiteral).text;
-        
+
                     // Resolve the module path
                     const resolvedModule = ts.resolveModuleName(
                         moduleSpecifier,
@@ -165,15 +167,15 @@ export class SchemaGenerator {
                         program.getCompilerOptions(),
                         ts.sys
                     );
-        
+
                     const resolvedFileName = resolvedModule.resolvedModule?.resolvedFileName;
-        
+
                     if (resolvedFileName) {
                         const moduleSourceFile = program.getSourceFile(resolvedFileName);
-        
+
                         if (moduleSourceFile) {
                             const moduleSymbol = typeChecker.getSymbolAtLocation(moduleSourceFile);
-        
+
                             if (moduleSymbol) {
                                 // Check if it's a wildcard export or named exports
                                 if (!node.exportClause) {
@@ -244,7 +246,7 @@ export class SchemaGenerator {
         return { symbols, inheritingTypes, typeChecker, settings };
     }
 
-    protected getDefaultOptions(): Required<Omit<Options, "schemaProcessor">> {
+    protected getDefaultOptions(): RequiredOptions {
         return {
             ref: false,
             titles: false,
@@ -253,6 +255,7 @@ export class SchemaGenerator {
             customKeywordPrefix: "x-",
             customKeywords: [],
             uniqueNames: false,
+            defaultUnionModifier: 'anyOf',
             defaultNumberType: "number",
             tsNodeRegister: false,
             nullableKeyword: true,
@@ -715,7 +718,7 @@ export class SchemaGenerator {
     protected getUnionDefinition(
         unionType: ts.UnionType,
         prop: ts.Symbol,
-        unionModifier: string,
+        unionModifier: UnionModifier,
         definition: Definition
     ): Definition {
         const enumValues: PrimitiveType[] = [];
@@ -978,7 +981,7 @@ export class SchemaGenerator {
     protected getTypeDefinition(
         typ: ts.Type,
         asRef = this.args.ref,
-        unionModifier: string = "anyOf",
+        unionModifier = this.args.defaultUnionModifier,
         prop?: ts.Symbol,
         reffedType?: ts.Symbol
     ): Definition {
