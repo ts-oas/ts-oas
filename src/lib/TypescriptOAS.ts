@@ -10,6 +10,7 @@ import {
     ParameterObject,
     RequestBodyObject,
     ResponsesObject,
+    Version,
 } from "..";
 import { SchemaGenerator } from "./SchemaGenerator";
 
@@ -205,7 +206,7 @@ export class TypescriptOAS extends SchemaGenerator {
         return security;
     }
 
-    public getOpenApiSpec(typeNames: (string | RegExp)[], specData: OpenApiSpecData = {}): OpenApiSpec {
+    public getOpenApiSpec<T extends Version>(typeNames: (string | RegExp)[], specData: OpenApiSpecData<T> = {}): OpenApiSpec<T> {
         const filteredTypes: string[] = [];
 
         typeNames.forEach((typeName) => {
@@ -219,13 +220,17 @@ export class TypescriptOAS extends SchemaGenerator {
         this.resetSchemaSpecificProperties();
         this.refPath = "#/components/schemas/";
 
-        const spec: OpenApiSpec = {
-            openapi: "3.0.3",
+        const spec: OpenApiSpec<T> = {
+            openapi: specData.openapi || "3.1.0" as T,
             info: specData.info || { title: "OpenAPI specification", version: "1.0.0" },
             ...specData,
             components: specData.components,
             paths: {},
         };
+
+        if (spec.openapi === '3.1.0' && !this.options.hasOwnProperty('nullableKeyword')) {
+            this.args.nullableKeyword = false;
+        }
 
         for (const typeName of filteredTypes) {
             const type = this.symbols[typeName];

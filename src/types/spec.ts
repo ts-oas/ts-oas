@@ -1,5 +1,5 @@
 import { Definition, HTTPMethod } from ".";
-import { OpenAPIV3 } from "openapi-types";
+import { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 
 export type ResponsesObject = {
     [key: string]: {
@@ -37,20 +37,28 @@ export type PathsObject = {
     [path: string]: Partial<Record<Lowercase<HTTPMethod>, OperationObject>>;
 };
 
-export type OpenApiSpecData = {
-    info?: OpenAPIV3.InfoObject;
-    tags?: OpenAPIV3.TagObject[];
-    security?: OpenAPIV3.SecurityRequirementObject[];
-    servers?: OpenAPIV3.ServerObject[];
-    externalDocs?: OpenAPIV3.ExternalDocumentationObject;
-    components?: Omit<OpenAPIV3.ComponentsObject, "schemas"> & {
-        schemas?: {
-            [schemaName: string]: OpenAPIV3.ReferenceObject | Definition;
-        };
-    };
+export type Version = "3.1.0" | "3.0.3";
+
+export type OpenApiSpecData<T extends Version = "3.1.0"> = {
+    openapi?: T;
+    info?: T extends "3.1.0" ? OpenAPIV3_1.InfoObject : OpenAPIV3.InfoObject;
+    tags?: T extends "3.1.0" ? OpenAPIV3_1.TagObject[] : OpenAPIV3.TagObject[];
+    security?: T extends "3.1.0" ? OpenAPIV3_1.SecurityRequirementObject[] : OpenAPIV3.SecurityRequirementObject[];
+    servers?: T extends "3.1.0" ? OpenAPIV3_1.ServerObject[] : OpenAPIV3.ServerObject[];
+    externalDocs?: T extends "3.1.0" ? OpenAPIV3_1.ExternalDocumentationObject : OpenAPIV3.ExternalDocumentationObject;
+    components?: T extends "3.1.0"
+        ? Omit<OpenAPIV3_1.ComponentsObject, "schemas"> & {
+              schemas?: {
+                  [schemaName: string]: OpenAPIV3_1.ReferenceObject | Definition;
+              };
+          }
+        : Omit<OpenAPIV3.ComponentsObject, "schemas"> & {
+              schemas?: {
+                  [schemaName: string]: OpenAPIV3.ReferenceObject | Definition;
+              };
+          };
 };
 
-export type OpenApiSpec = OpenApiSpecData & {
-    openapi: "3.0.3";
+export type OpenApiSpec<T extends Version = "3.1.0"> = OpenApiSpecData<T> & {
     paths: PathsObject;
 };
