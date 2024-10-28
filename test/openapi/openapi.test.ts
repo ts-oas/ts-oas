@@ -3,22 +3,36 @@ import { readFileSync, writeFileSync } from "fs";
 import { expect } from "chai";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import TypescriptOAS, { createProgram } from "../../src";
+import Ajv from "ajv";
 
 const openapiFile = JSON.parse(readFileSync(resolve(__dirname, `openapi.schema.json`), "utf8"));
 const openapiWithRefFile = JSON.parse(readFileSync(resolve(__dirname, `openapi-with-ref.schema.json`), "utf8"));
+const openApi3_0_3 = JSON.parse(readFileSync(resolve(__dirname, `openapi-3.0.3.schema.json`), "utf-8"));
 const openApiWithSecurity = JSON.parse(readFileSync(resolve(__dirname, `openapi-with-security.schema.json`), "utf-8"));
 const openApiWithDefaultSecurity = JSON.parse(readFileSync(resolve(__dirname, `openapi-with-default-security.schema.json`), "utf-8"));
 
 const typeNames = ["GetAllBooksApi", "EditBookApi"];
 const typeNamesForMapperTest = ["GetAllBooksApi", "EditBookApiWithMapper"];
-const typeNamesForSecureTests = ["GetAllBooksApi", "EditBookSecureApiMapper"];
+const typeNamesForSecureTests = ["GetAllBooksApi", "EditBookSecureApi"];
 const typeNamesForDefaultSecureTests = ["GetAllUnsecureBooksApi", "EditBookApiWithMapper"];
 
 const program = createProgram(["openapi.ts"], { strictNullChecks: true }, resolve(__dirname));
 
 describe("openapi", () => {
     it("should validate against SwaggerParser and json file", async () => {
-        const tsoas = new TypescriptOAS(program, { customKeywords: ["thisIsCustom"] });
+        const ajv = new Ajv();
+        const schemaValidator = ajv.getSchema("http://json-schema.org/draft-07/schema")!;
+
+        const tsoas = new TypescriptOAS(program, {
+            customKeywords: ["thisIsCustom"],
+            schemaProcessor: (schema) => {
+                if (schema.type !== "undefined") {
+                    const isValidSchema = schemaValidator(schema);
+                    expect(isValidSchema).to.equal(true, `NOT a valid JSON Schema -> ${schema} -> ${schemaValidator.errors}`);
+                }
+                return schema;
+            },
+        });
         const spec = tsoas.getOpenApiSpec(typeNames);
 
         // writeFileSync(resolve(__dirname, `openapi.schema.json`), JSON.stringify(spec), "utf8");
@@ -34,6 +48,16 @@ describe("openapi", () => {
         // writeFileSync(resolve(__dirname, `openapi-with-ref.schema.json`), JSON.stringify(spec), "utf8");
 
         expect(spec).to.deep.equal(openapiWithRefFile);
+        await SwaggerParser.validate(spec as any, {});
+    });
+
+    it("should validate version 3.0.3 against SwaggerParser and json file", async () => {
+        const tsoas = new TypescriptOAS(program, { customKeywords: ["thisIsCustom"] });
+        const spec = tsoas.getOpenApiSpec(typeNames, { openapi: "3.0.3" });
+
+        // writeFileSync(resolve(__dirname, `openapi-3.0.3.schema.json`), JSON.stringify(spec), "utf8");
+
+        expect(spec).to.deep.equal(openApi3_0_3);
         await SwaggerParser.validate(spec as any, {});
     });
 

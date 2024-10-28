@@ -19,6 +19,7 @@ export class SchemaGenerator {
         this.symbols = symbols;
         this.inheritingTypes = inheritingTypes;
         this.tc = typeChecker;
+        this.options = options;
         this.args = settings;
         this.annotationKeywords = {
             ...validationKeywords,
@@ -26,6 +27,7 @@ export class SchemaGenerator {
             ...this.args.customKeywords?.reduce((acc, word) => ({ ...acc, [word]: "custom" }), {}),
         };
     }
+    protected options: Options;
     protected args: RequiredOptions;
     protected tc: ts.TypeChecker;
     /**
