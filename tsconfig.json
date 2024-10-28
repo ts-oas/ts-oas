@@ -18,7 +18,6 @@
     "noLib": false,
     "preserveConstEnums": true,
     "sourceMap": true,
-    "watch": false,
     "rootDir": "./src",
     "typeRoots": ["node_modules/@types"]
   },

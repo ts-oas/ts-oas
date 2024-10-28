@@ -1,21 +1,24 @@
 # Typescript OpenAPI Spec Generator
 
-[![npm version](https://img.shields.io/npm/v/ts-oas.svg)](https://www.npmjs.com/package/ts-oas)
+[![NPM version](https://img.shields.io/npm/v/ts-oas.svg)](https://www.npmjs.com/package/ts-oas)
+![GitHub License](https://img.shields.io/github/license/ts-oas/ts-oas)
+![NPM Unpacked Size](https://img.shields.io/npm/unpacked-size/ts-oas)
 
-Generate OpenAPI (formerly Swagger) specifications from Typescript types, automatically. Needs interfaces/types in a specific format.
+
+Automatically generate OpenAPI (formerly Swagger) specifications from Typescript types. Supports OpenAPI **v3.1** and **v3.0**. Requires interfaces/types in a specific format.
 
 ## Benefits
 
--   Write once, use many. Typescript is one of the most fluent ways to declare API specifications. Using `ts-oas`, we are able to utilize the generated specs for not only the documentations, also input validations (eg. ajv), serializing, maintaining business logic codes or their tests (with generics) and more.
--   Automation first. Simply write a script and regenerate specs accordingly after making any change in types.
--   Headless. Works with any server-side framework, unlike some tools.
+-   **Write once, use many.** Typescript provides a fluent way to declare API specifications. With `ts-oas`, you can use the generated specs not only for documentation but also for input validation (eg. with AJV), serialization, maintaining business logic or test codes (with generics), and more.
+-   **Automation first.** Simply write a script to regenerate specs accordingly after any type changes.
+-   **Headless.** Works seamlessly with any server-side framework, unlike some other tools.
 
 ## Features
 
 -   Both [Programmatic](#a-quick-example) and [Command line](#cli) support.
--   Supports JSDoc annotations. Using pre-defined and user-defined keywords, metadata can be included in every schema objects.
--   Reference schemas and components. Schema references can be generated and addressed in accord with their correspond type references.
--   Schema processor function for any desired post-process (if JSDoc isn't enough).
+-   Reference schemas and components. Generate schema references that correspond to their Typescript type references.
+-   Supports JSDoc annotations. With both pre-defined and custom keywords, metadata can be included in every schema object.
+-   Schema processor function for any custom post-processing (if JSDoc annotations aren't enough).
 -   Generate schemas separately.
 -   Typescript 4 and 5 compliant.
 
@@ -46,8 +49,8 @@ type Api = {
 We have `interfaces.ts` where our API types are present:
 
 ```ts
-import { ApiMapper } from "ts-oas";
-// Recommended to use ApiMapper to help to keep the format valid.
+import { ApiMapper } from "ts-oas"; // Recommended to use ApiMapper to help to keep the format valid.
+
 export type GetBarAPI = ApiMapper<{
     path: "/foo/bar/:id";
     method: "GET";
@@ -62,10 +65,6 @@ export type GetBarAPI = ApiMapper<{
          * @contentType application/json
          */
         "200": Bar;
-        /** 
-         * No Content 
-         */
-        "204": never;
         "404": { success: false };
     };
 }>;
@@ -79,7 +78,10 @@ export type AddBarAPI = ApiMapper<{
     method: "POST";
     body: Bar;
     responses: {
-        "201": {};
+        /**
+         * No content
+         */
+        "201": never;
     };
 }>;
 
@@ -98,25 +100,15 @@ In `script.ts` file:
 ```ts
 import TypescriptOAS, { createProgram } from "ts-oas";
 import { resolve } from "path";
-import { writeFileSync } from "fs";
-import { inspect } from "util";
 
 // create a Typescript program. or any generic ts program can be used.
-const tsProgram = createProgram(
-    ["interfaces.ts"],
-    {
-        strictNullChecks: true,
-    },
-    resolve()
-);
+const tsProgram = createProgram(["interfaces.ts"], { strictNullChecks: true }, resolve());
 
 // initiate the OAS generator.
-const tsoas = new TypescriptOAS(tsProgram, {
-    ref: true,
-});
+const tsoas = new TypescriptOAS(tsProgram, { ref: true });
 
-// get the complete OAS. determine which types must be used for API specs by passing type names(Regex/exact name)
-const specObject = tsoas.getOpenApiSpec([/API$/]); // /API$/ -> all types that ends with "API"
+// get the complete OAS. determine type names (Regex/exact name) to be considered for specs.
+const specObject = tsoas.getOpenApiSpec([/API$/]); // all types that ends with "API"
 
 // log results:
 console.log(JSON.stringify(specObject, null, 4));
@@ -131,7 +123,7 @@ Run the above script.
 
 ```json
 {
-    "openapi": "3.0.3",
+    "openapi": "3.1.0",
     "info": {
         "title": "OpenAPI specification",
         "version": "1.0.0"
@@ -225,15 +217,7 @@ Run the above script.
                 },
                 "responses": {
                     "201": {
-                        "description": "",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {}
-                                }
-                            }
-                        }
+                        "description": "No content"
                     }
                 }
             }
@@ -276,7 +260,7 @@ console.log(schema);
 
 ## CLI
 
-Command line tool is designed to behave just like the programmatic way. Once it has been installed, CLI can be executable using `npx ts-oas`, or just `ts-oas` if installed globally.
+Command line tool is designed to behave just like the programmatic way. Once it has been installed, CLI can be executed using `npx ts-oas`, or just `ts-oas` if installed globally.
 
 ```
 Usage: ts-oas <file-paths> <type-names> [options]
@@ -327,7 +311,8 @@ Examples:
 
 #### Special keywords for root of API types
 
-@summary @operationId @tags @ignore @body.description @body.contentType
+| @summary | @operationId | @tags | @ignore | @body.description | @body.contentType |
+| -------- | ------------ | ----- | ------- | ----------------- | ----------------- |
 
 <details><summary>Example</summary>
 
@@ -355,7 +340,8 @@ export type AddBarAPI = ApiMapper<{
 
 #### Special keywords for response items
 
-@contentType
+| @contentType |
+| ------------ |
 
 <details><summary>Example</summary>
 
@@ -378,79 +364,78 @@ export type AddBarAPI = ApiMapper<{
 
 > _default: false_
 
-Uses schemas as references, corresponding to their type references.
+Defines references for schemas  based on their type references.
 
 #### `titles`
 
 > _default: false_
 
-Provides `title` field in each schema which is filled by it's corresponding field name or type name.
+Provides a `title` field in each schema, filled with its corresponding field name or type name.
 
 #### `ignoreRequired`
 
 > _default: false_
 
-Ignores `required` field in all schemas.
+Ignores the `required` field in all schemas.
 
 #### `ignoreErrors`
 
 > _default: false_
 
-Ignores errors in typescript files. May introduces wrong schemas.
+Ignores errors in Typescript files. May introduce wrong schemas.
 
 #### `uniqueNames`
 
 > _default: false_
 
-Replaces a hash for every type name to avoid duplication issues.
+Replaces every type name with a unique hash to avoid duplication issues.
 
 #### `tsNodeRegister`
 
 > _default: false_
 
-Uses `ts-node/register` as a runtime argument. It enables you to directly execute TypeScript on Node.js without precompiling.
+Uses `ts-node/register` as a runtime argument, enabling direct execution of TypeScript on Node.js without precompiling.
 
 #### `nullableKeyword`
 
 > _default: true_
 
-Provides `nullable: true` for nullable fields, otherwise set `type: "null"`.
+Provides `nullable: true` for nullable fields; otherwise, set `type: "null"`.
 
 #### `defaultContentType`
 
 > _default: "\*/\*"_
 
-Default content type for all the operations. Can be overwritten case by case (See the annotations section.).
+Sets the default content type for all operations. This can be overridden case-by-case (see the annotations section).
 
 #### `defaultNumberType`
 
 > _default: "number"_
 
-Default schema type for number types. Can be overwritten case by case (See the annotations section.).
+Sets the default schema type for number values, which can be overridden case-by-case (see the annotations section).
 
 #### `customKeywords`
 
-Custom keywords to consider in annotations.
+A list of custom keywords to consider in annotations.
 
 #### `customKeywordPrefix`
 
 > _default: "x-"_
 
-Prefix that should be added to all `customKeywords`.
+The prefix added to all `customKeywords`.
 
 #### `schemaProcessor`
 
-A function that will run over each generated schema.
+A function that runs over each generated schema.
 
 ## Inspirations
 
-`ts-oas` is highly inspired by [typescript-json-schema](https://github.com/YousefED/typescript-json-schema). While using the so-called library, it took lots of workarounds to create compatible OpenAPI v3.0 specs. For example, modifying output schemas enforced us to use schema-walker tools which added lots of overhead in our scripts (Despite of compatible OpenAPI schemas in `ts-oas`, there is a schema-processor custom function as an option as well).
+`ts-oas` is highly inspired by [typescript-json-schema](https://github.com/YousefED/typescript-json-schema). While using the so-called library, it took lots of workarounds to create compatible OpenAPI v3.0 specs. For example, modifying output schemas enforced us to use schema-walker tools which added lots of overhead in our scripts (Despite of compatible OpenAPI schemas in `ts-oas`, we added a schema-processor custom function as an option as well).
 
-Connecting Typescript types to serializer and validators to cut down the developing times, was the main purpose of developing this tool.
 
 ## Contributing
 
-Any contributions are welcome.
+Contributions of any kind are welcome!
 
 <details><summary>TODOs</summary>
 

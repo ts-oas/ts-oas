@@ -69,7 +69,10 @@ type EditBookApi = {
     };
 };
 
-type EditBookSecureApi = {
+/**
+ * @operationId Edit Book Secure Api
+ */
+type EditBookSecureApi = ApiMapper<{
     path: "/category/book/:id";
     method: "PATCH";
     param: { id: number };
@@ -83,14 +86,9 @@ type EditBookSecureApi = {
         "204": never;
     };
     security: [{ basicAuth: [] }, { bearerToken: ["book:write", "book:read"] }];
-};
+}>;
 
 /**
  * @operationId EditBookApi
  */
 type EditBookApiWithMapper = ApiMapper<EditBookApi>;
-
-/**
- * @operationId Edit Book Secure Api
- */
-type EditBookSecureApiMapper = ApiMapper<EditBookSecureApi>;

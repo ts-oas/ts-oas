@@ -37,7 +37,7 @@ const tsoas = new TypescriptOAS(program, {});
 
 const spec = tsoas.getSchemas(typeNames);
 
-console.log(inspect(spec, { depth: null }));
+// console.log(inspect(spec, { depth: null }));
 
 describe("schema-generator", () => {
     it("annotation :: TypeWithDefault", async () => {
