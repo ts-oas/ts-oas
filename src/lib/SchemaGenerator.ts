@@ -7,14 +7,11 @@ import { openApiKeywords, refKeywords, REGEX_FILE_NAME_OR_SPACE, REGEX_REQUIRE, 
 
 const vm = require("vm");
 
-type RequiredOptions = Required<Omit<Options, 'schemaProcessor'>> & Pick<Options, 'schemaProcessor'>
+type RequiredOptions = Required<Omit<Options, "schemaProcessor">> & Pick<Options, "schemaProcessor">;
 
 export class SchemaGenerator {
     constructor(program: ts.Program, options: Options = {}) {
-        const { symbols, inheritingTypes, typeChecker, settings } = this.buildSchemaGenerator(
-            program,
-            options
-        );
+        const { symbols, inheritingTypes, typeChecker, settings } = this.buildSchemaGenerator(program, options);
 
         this.symbols = symbols;
         this.inheritingTypes = inheritingTypes;
@@ -122,7 +119,13 @@ export class SchemaGenerator {
 
             function inspect(node: ts.Node) {
                 // Collect defined symbols (whether exported or not)
-                if (ts.isVariableDeclaration(node) || ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node) || ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)) {
+                if (
+                    ts.isVariableDeclaration(node) ||
+                    ts.isFunctionDeclaration(node) ||
+                    ts.isClassDeclaration(node) ||
+                    ts.isInterfaceDeclaration(node) ||
+                    ts.isTypeAliasDeclaration(node)
+                ) {
                     const symbol = typeChecker.getSymbolAtLocation(node.name!);
                     if (symbol) {
                         rootSymbolNames.add(symbol.getName());
@@ -143,7 +146,7 @@ export class SchemaGenerator {
 
                     if (importClause.namedBindings) {
                         if (ts.isNamedImports(importClause.namedBindings)) {
-                            importClause.namedBindings.elements.forEach(element => {
+                            importClause.namedBindings.elements.forEach((element) => {
                                 const symbol = typeChecker.getSymbolAtLocation(element.name);
                                 if (symbol) {
                                     rootSymbolNames.add(symbol.getName());
@@ -184,12 +187,14 @@ export class SchemaGenerator {
                                     // Wildcard export: export * from "..."
                                     const exports = typeChecker.getExportsOfModule(moduleSymbol);
                                     exports.forEach((exportItem) => {
-                                        rootSymbolNames.add(exportItem.getName())
+                                        rootSymbolNames.add(exportItem.getName());
                                     });
                                 } else if (ts.isNamedExports(node.exportClause)) {
                                     // Named exports: export { ... } from "..."
                                     node.exportClause.elements.forEach((element) => {
-                                        const symbol = program.getTypeChecker().getExportSpecifierLocalTargetSymbol(element);
+                                        const symbol = program
+                                            .getTypeChecker()
+                                            .getExportSpecifierLocalTargetSymbol(element);
                                         if (symbol) {
                                             rootSymbolNames.add(symbol.getName());
                                         }
@@ -218,7 +223,7 @@ export class SchemaGenerator {
 
                     if (!rootSymbolNames.has(symbol.getName())) {
                         return;
-                    };
+                    }
 
                     const nodeType = typeChecker.getTypeAtLocation(node);
                     const fullyQualifiedName = typeChecker.getFullyQualifiedName(symbol);
@@ -232,7 +237,11 @@ export class SchemaGenerator {
                     const baseTypes = nodeType.getBaseTypes() || [];
 
                     baseTypes.forEach((baseType) => {
-                        var baseName = typeChecker.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+                        var baseName = typeChecker.typeToString(
+                            baseType,
+                            undefined,
+                            ts.TypeFormatFlags.UseFullyQualifiedType
+                        );
                         if (!inheritingTypes[baseName]) {
                             inheritingTypes[baseName] = [];
                         }
@@ -257,11 +266,12 @@ export class SchemaGenerator {
             customKeywordPrefix: "x-",
             customKeywords: [],
             uniqueNames: false,
-            defaultUnionModifier: 'anyOf',
+            defaultUnionModifier: "anyOf",
             defaultNumberType: "number",
             tsNodeRegister: false,
             nullableKeyword: true,
             defaultContentType: "*/*",
+            customOperationProperties: false,
         };
     }
 
@@ -1136,7 +1146,7 @@ export class SchemaGenerator {
             }
             const node = symbol?.getDeclarations() !== undefined ? symbol.getDeclarations()![0] : null;
             // Supports checking for members in remapped types like { [K in keyof X]: X[K] }
-            const members = 'members' in typ ? <ts.SymbolTable> typ.members : symbol?.members
+            const members = "members" in typ ? <ts.SymbolTable>typ.members : symbol?.members;
             // console.log("getTypeDefinition");
             // console.log(definition);
             if (definition.type === undefined) {
@@ -1152,20 +1162,22 @@ export class SchemaGenerator {
                     (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)
                 ) {
                     this.getEnumDefinition(typ, definition);
-                } else if (
-                    symbol &&
-                    symbol.flags & ts.SymbolFlags.TypeLiteral &&
-                    members && members.size === 0
-                ) {
+                } else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && members && members.size === 0) {
                     // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
                     definition.type = "object";
                     definition.properties = {};
 
                     // Check if it is a mapped type (eg Record<keyType, valueType>)
                     // type.indexInfos contains schemas for keys and values of mapped types
-                    const indexInfo = ('indexInfos' in typ ? typ.indexInfos as ts.IndexInfo[] : []).at(0)
+                    const indexInfo = ("indexInfos" in typ ? (typ.indexInfos as ts.IndexInfo[]) : []).at(0);
                     if (node && node.kind === ts.SyntaxKind.MappedType && indexInfo) {
-                        definition.additionalProperties = this.getTypeDefinition(indexInfo.type, asRef, unionModifier, prop, reffedType)
+                        definition.additionalProperties = this.getTypeDefinition(
+                            indexInfo.type,
+                            asRef,
+                            unionModifier,
+                            prop,
+                            reffedType
+                        );
                     }
                 } else {
                     this.getClassDefinition(typ, definition);

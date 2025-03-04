@@ -46,10 +46,8 @@
                           },
                           "meta-data": {
                             "type": "object",
-                            "additionalProperties": {
-                              "type": "string"
-                            },
-                            "properties": {}
+                            "properties": {},
+                            "additionalProperties": { "type": "string" }
                           },
                           "statuses": {
                             "type": "array",
@@ -145,10 +143,8 @@
                         },
                         "meta-data": {
                           "type": "object",
-                          "additionalProperties": {
-                            "type": "string"
-                          },
-                          "properties": {}
+                          "properties": {},
+                          "additionalProperties": { "type": "string" }
                         },
                         "statuses": {
                           "type": "array",
@@ -220,7 +216,18 @@
             }
           },
           "204": { "description": "No Content" }
-        }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:012345678901:function:HelloWorld/invocations",
+          "responses": {
+            "200": {
+              "statusCode": "200",
+              "responseParameters": { "method.response.header.requestId": "integration.response.header.cid" }
+            }
+          }
+        },
+        "x-rate-limit": { "rate": 100, "burst": 200, "timeWindow": "1m" }
       }
     }
   }

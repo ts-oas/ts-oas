@@ -6,7 +6,7 @@ export type AnnotationKeywords = {
     [prop: string]: boolean | "custom";
 };
 
-export type UnionModifier = 'anyOf' | 'oneOf';
+export type UnionModifier = "anyOf" | "oneOf";
 
 export type Options = {
     /**
@@ -68,6 +68,13 @@ export type Options = {
      * @default "x-"
      */
     customKeywordPrefix?: string | null;
+    /**
+     * Whether to consider custom operation properties in the root of API types.
+     *
+     * If true, avoid using {@link ApiMapper}, as it will override these properties.
+     * @default false
+     */
+    customOperationProperties?: boolean;
     /**
      * A function that will run over each generated schema.
      */
