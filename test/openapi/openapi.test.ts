@@ -9,10 +9,16 @@ const openapiFile = JSON.parse(readFileSync(resolve(__dirname, `openapi.schema.j
 const openapiWithRefFile = JSON.parse(readFileSync(resolve(__dirname, `openapi-with-ref.schema.json`), "utf8"));
 const openApi3_0_3 = JSON.parse(readFileSync(resolve(__dirname, `openapi-3.0.3.schema.json`), "utf-8"));
 const openApiWithSecurity = JSON.parse(readFileSync(resolve(__dirname, `openapi-with-security.schema.json`), "utf-8"));
-const openApiWithDefaultSecurity = JSON.parse(readFileSync(resolve(__dirname, `openapi-with-default-security.schema.json`), "utf-8"));
+const openApiWithDefaultSecurity = JSON.parse(
+    readFileSync(resolve(__dirname, `openapi-with-default-security.schema.json`), "utf-8")
+);
+const openApiWithCustomOperationProperties = JSON.parse(
+    readFileSync(resolve(__dirname, `openapi-with-custom-operation-properties.schema.json`), "utf-8")
+);
 
 const typeNames = ["GetAllBooksApi", "EditBookApi"];
-const typeNamesForMapperTest = ["GetAllBooksApi", "EditBookApiWithMapper"];
+const typeNamesForCustomOperationProperties = ["GetAllBooksApi", "EditBookApi", "EditBookApiWithCustomProperties"];
+const typeNamesForMapperTest = ["GetAllBooksApi", "EditBookApiWithMapper", "EditBookApiWithCustomProperties"];
 const typeNamesForSecureTests = ["GetAllBooksApi", "EditBookSecureApi"];
 const typeNamesForDefaultSecureTests = ["GetAllUnsecureBooksApi", "EditBookApiWithMapper"];
 
@@ -28,12 +34,15 @@ describe("openapi", () => {
             schemaProcessor: (schema) => {
                 if (schema.type !== "undefined") {
                     const isValidSchema = schemaValidator(schema);
-                    expect(isValidSchema).to.equal(true, `NOT a valid JSON Schema -> ${schema} -> ${schemaValidator.errors}`);
+                    expect(isValidSchema).to.equal(
+                        true,
+                        `NOT a valid JSON Schema -> ${schema} -> ${schemaValidator.errors}`
+                    );
                 }
                 return schema;
             },
         });
-        const spec = tsoas.getOpenApiSpec(typeNames);
+        const spec = tsoas.getOpenApiSpec(typeNamesForCustomOperationProperties);
 
         // writeFileSync(resolve(__dirname, `openapi.schema.json`), JSON.stringify(spec), "utf8");
 
@@ -76,8 +85,8 @@ describe("openapi", () => {
                         type: "http",
                         scheme: "basic",
                     },
-                }
-            }
+                },
+            },
         });
 
         // writeFileSync(resolve(__dirname, `openapi-with-security.schema.json`), JSON.stringify(spec), "utf8");
@@ -102,8 +111,8 @@ describe("openapi", () => {
                         type: "http",
                         scheme: "basic",
                     },
-                }
-            }
+                },
+            },
         });
 
         // writeFileSync(resolve(__dirname, `openapi-with-default-security.schema.json`), JSON.stringify(spec), "utf8");
@@ -145,5 +154,18 @@ describe("openapi", () => {
         expect(spec.tags).to.equal(tags);
         expect(spec.info).to.equal(info);
         expect(spec.components).to.equal(components);
+    });
+
+    it("should validate against json file with custom operation properties", async () => {
+        const tsoas = new TypescriptOAS(program, {
+            customKeywords: ["thisIsCustom"],
+            customOperationProperties: true,
+        });
+        const spec = tsoas.getOpenApiSpec(typeNamesForCustomOperationProperties);
+
+        // writeFileSync(resolve(__dirname, `openapi-with-custom-operation-properties.schema.json`), JSON.stringify(spec), "utf8");
+
+        expect(spec).to.deep.equal(openApiWithCustomOperationProperties);
+        await SwaggerParser.validate(spec as any, {});
     });
 });

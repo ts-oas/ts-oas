@@ -4,7 +4,6 @@
 ![GitHub License](https://img.shields.io/github/license/ts-oas/ts-oas)
 ![NPM Unpacked Size](https://img.shields.io/npm/unpacked-size/ts-oas)
 
-
 Automatically generate OpenAPI (formerly Swagger) specifications from Typescript types. Supports OpenAPI **v3.1** and **v3.0**. Requires interfaces/types in a specific format.
 
 ## Benefits
@@ -364,7 +363,7 @@ export type AddBarAPI = ApiMapper<{
 
 > _default: false_
 
-Defines references for schemas  based on their type references.
+Defines references for schemas based on their type references.
 
 #### `titles`
 
@@ -424,6 +423,13 @@ A list of custom keywords to consider in annotations.
 
 The prefix added to all `customKeywords`.
 
+#### `customOperationProperties`
+
+> _default: false_
+
+Whether to consider custom operation properties in the root of API types.
+If true, avoid using `ApiMapper`, as it will override these properties.
+
 #### `schemaProcessor`
 
 A function that runs over each generated schema.
@@ -431,7 +437,6 @@ A function that runs over each generated schema.
 ## Inspirations
 
 `ts-oas` is highly inspired by [typescript-json-schema](https://github.com/YousefED/typescript-json-schema). While using the so-called library, it took lots of workarounds to create compatible OpenAPI v3.0 specs. For example, modifying output schemas enforced us to use schema-walker tools which added lots of overhead in our scripts (Despite of compatible OpenAPI schemas in `ts-oas`, we added a schema-processor custom function as an option as well).
-
 
 ## Contributing
 

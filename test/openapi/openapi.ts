@@ -47,7 +47,7 @@ type GetAllBooksApi = ApiMapper<{
     query: GetAllBooksQuery;
     responses: { "200": Response<GetAllBooksQueryRes> } & DefaultResp;
 }>;
-type GetAllUnsecureBooksApi = GetAllBooksApi & {security: []};
+type GetAllUnsecureBooksApi = GetAllBooksApi & { security: [] };
 
 interface EditBookQuery extends GetAllBooksQuery {
     another_field: string;
@@ -92,3 +92,35 @@ type EditBookSecureApi = ApiMapper<{
  * @operationId EditBookApi
  */
 type EditBookApiWithMapper = ApiMapper<EditBookApi>;
+
+type EditBookApiWithCustomProperties = {
+    path: "/category/book-with-custom-properties/:id";
+    method: "PATCH";
+    param: { id: number };
+    query: EditBookQuery;
+    body: {};
+    responses: {
+        "200": Response<EditBookRes>;
+        /**
+         * No Content
+         */
+        "204": never;
+    };
+    "x-amazon-apigateway-integration": {
+        type: "aws_proxy";
+        uri: "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:012345678901:function:HelloWorld/invocations";
+        responses: {
+            "200": {
+                statusCode: "200";
+                responseParameters: {
+                    "method.response.header.requestId": "integration.response.header.cid";
+                };
+            };
+        };
+    };
+    "x-rate-limit": {
+        rate: 100;
+        burst: 200;
+        timeWindow: "1m";
+    };
+};

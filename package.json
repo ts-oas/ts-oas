@@ -1,6 +1,6 @@
 {
   "name": "ts-oas",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Automatically generate OpenAPI specifications from Typescript types.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -36,7 +36,7 @@
     "@types/mocha": "^10.0.9",
     "@types/yargs": "^17.0.33",
     "ajv": "^8.17.1",
-    "chai": "^5.1.2",
+    "chai": "^4.5.0",
     "eslint": "^8.26.0",
     "mocha": "^10.7.3",
     "prettier": "^2.7.1",

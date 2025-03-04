@@ -169,7 +169,13 @@ export class TypescriptOAS extends SchemaGenerator {
             if (respType.flags !== ts.TypeFlags.Never) {
                 responses[respSymbol.escapedName as string].content = {
                     [contentType]: {
-                        schema: this.getTypeDefinition(respType, this.args.ref, undefined, undefined, respType.aliasSymbol),
+                        schema: this.getTypeDefinition(
+                            respType,
+                            this.args.ref,
+                            undefined,
+                            undefined,
+                            respType.aliasSymbol
+                        ),
                     },
                 };
             }
@@ -186,7 +192,7 @@ export class TypescriptOAS extends SchemaGenerator {
         const security: OpenAPIV3.SecurityRequirementObject[] = [];
         const typeDef = this.getTypeDefinition(type);
 
-        if (typeDef?.items === undefined) { return []; }
+        if (typeDef?.items === undefined) return [];
 
         for (const itemIndex in typeDef.items) {
             const obj = typeDef.items[itemIndex] as Definition;
@@ -196,8 +202,8 @@ export class TypescriptOAS extends SchemaGenerator {
                     [property]:
                         propertyItems instanceof Array && propertyItems?.length
                             ? propertyItems
-                                .filter((item) => item.type === "string" && item.enum)
-                                .map((item) => item.enum![0])
+                                  .filter((item) => item.type === "string" && item.enum)
+                                  .map((item) => item.enum![0])
                             : [],
                 });
             }
@@ -206,7 +212,138 @@ export class TypescriptOAS extends SchemaGenerator {
         return security;
     }
 
-    public getOpenApiSpec<T extends Version>(typeNames: (string | RegExp)[], specData: OpenApiSpecData<T> = {}): OpenApiSpec<T> {
+    private findCustomProperties(type: ts.Type): Record<string, any> {
+        const operation: Record<string, any> = {};
+        const processedProps = ["path", "param", "method", "body", "params", "query", "responses", "security"];
+
+        for (const prop of type.getProperties()) {
+            const propName = prop.getName();
+            if (!processedProps.includes(propName)) {
+                const propType = this.getTypeFromSymbol(prop);
+
+                // Get a schema definition for this property
+                const schema = this.getTypeDefinition(propType, false);
+
+                // If we have a valid schema, use it as the property value
+                if (schema && Object.keys(schema).length > 0) {
+                    // For simple types with enum values, extract the value
+                    if (schema.enum && schema.enum.length === 1) {
+                        operation[propName] = schema.enum[0];
+                    }
+                    // For object types with properties, create an object with those properties
+                    else if (schema.type === "object" && schema.properties) {
+                        operation[propName] = this.processCustomPropertiesObject(schema.properties);
+                    }
+                    // For arrays, create an array with the actual values
+                    else if (schema.type === "array") {
+                        // Special case for empty arrays
+                        if (schema.minItems === 0 && schema.maxItems === 0) {
+                            operation[propName] = [];
+                        }
+                        // For arrays with items schema
+                        else if (schema.items) {
+                            // Handle array of objects case
+                            if (Array.isArray(schema.items)) {
+                                const processedItems = schema.items.map((item) => {
+                                    if (item.type === "object" && item.properties) {
+                                        return this.processCustomPropertiesObject(item.properties);
+                                    }
+                                    return item;
+                                });
+                                operation[propName] = processedItems;
+                            }
+                            // If items is an object with properties, process it recursively
+                            else if (
+                                "type" in schema.items &&
+                                schema.items.type === "object" &&
+                                schema.items.properties
+                            ) {
+                                const processedItem = this.processCustomPropertiesObject(schema.items.properties);
+                                operation[propName] = [processedItem];
+                            }
+                            // For simple items, use the schema
+                            else {
+                                operation[propName] = [schema.items];
+                            }
+                        }
+                        // Fallback for other array types
+                        else {
+                            operation[propName] = [];
+                        }
+                    }
+                    // For union types (enums), use the enum values
+                    else if (schema.enum && schema.enum.length > 0) {
+                        operation[propName] = schema.enum;
+                    }
+                    // For other cases, use the schema directly
+                    else {
+                        operation[propName] = schema;
+                    }
+                }
+            }
+        }
+
+        return operation;
+    }
+
+    private processCustomPropertiesObject(properties: Record<string, any>): Record<string, any> {
+        const result = {};
+
+        for (const [key, value] of Object.entries(properties)) {
+            // For properties with enum values, use the first enum value
+            if (value.enum && value.enum.length === 1) {
+                result[key] = value.enum[0];
+            }
+            // For nested objects, recursively process
+            else if (value.type === "object" && value.properties) {
+                result[key] = this.processCustomPropertiesObject(value.properties);
+            }
+            // For arrays, process them appropriately
+            else if (value.type === "array") {
+                // Empty array case
+                if (value.minItems === 0 && value.maxItems === 0) {
+                    result[key] = [];
+                }
+                // Array with items
+                else if (value.items) {
+                    // Handle array of objects case
+                    if (Array.isArray(value.items)) {
+                        const processedItems = value.items.map((item) => {
+                            if (item.type === "object" && item.properties) {
+                                return this.processCustomPropertiesObject(item.properties);
+                            }
+                            return item;
+                        });
+                        result[key] = processedItems;
+                    }
+                    // If items is an object with properties, process it recursively
+                    else if (value.items.type === "object" && value.items.properties) {
+                        const processedItem = this.processCustomPropertiesObject(value.items.properties);
+                        result[key] = [processedItem];
+                    }
+                    // For simple items
+                    else {
+                        result[key] = [value.items];
+                    }
+                }
+                // Fallback
+                else {
+                    result[key] = [];
+                }
+            }
+            // For other types, use the property schema as is
+            else {
+                result[key] = value;
+            }
+        }
+
+        return result;
+    }
+
+    public getOpenApiSpec<T extends Version>(
+        typeNames: (string | RegExp)[],
+        specData: OpenApiSpecData<T> = {}
+    ): OpenApiSpec<T> {
         const filteredTypes: string[] = [];
 
         typeNames.forEach((typeName) => {
@@ -221,14 +358,14 @@ export class TypescriptOAS extends SchemaGenerator {
         this.refPath = "#/components/schemas/";
 
         const spec: OpenApiSpec<T> = {
-            openapi: specData.openapi || "3.1.0" as T,
+            openapi: specData.openapi || ("3.1.0" as T),
             info: specData.info || { title: "OpenAPI specification", version: "1.0.0" },
             ...specData,
             components: specData.components,
             paths: {},
         };
 
-        if (spec.openapi === '3.1.0' && !this.options.hasOwnProperty('nullableKeyword')) {
+        if (spec.openapi === "3.1.0" && !this.options.hasOwnProperty("nullableKeyword")) {
             this.args.nullableKeyword = false;
         }
 
@@ -284,6 +421,14 @@ export class TypescriptOAS extends SchemaGenerator {
             if (securitySymbol) {
                 operation.security = this.getSecurity(this.getTypeFromSymbol(securitySymbol));
                 if (operation.security === undefined) delete operation.security;
+            }
+
+            // custom operation properties
+            if (this.args.customOperationProperties) {
+                const customOperationProps = this.findCustomProperties(type);
+                for (const [propName, propValue] of Object.entries(customOperationProps)) {
+                    operation[propName] = propValue;
+                }
             }
 
             const currPath = this.getPath(this.getTypeFromSymbol(pathSymbol));
