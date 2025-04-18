@@ -1010,6 +1010,11 @@ export class SchemaGenerator {
             reffedType = undefined;
         }
 
+        const isTypeArgument = reffedType && <number>typ.flags === 1049600;
+        if (isTypeArgument) {
+            asRef = false;
+        }
+
         let returnedDefinition = definition; // returned definition, may be a $ref
 
         // Parse property comments now to skip recursive if ignore.
@@ -1100,9 +1105,9 @@ export class SchemaGenerator {
                 this.recursiveTypeRef.set(fullTypeName, definition);
                 if (
                     this.args.ref &&
-                    reffedType?.escapedName &&
-                    reffedType.escapedName !== "__type" &&
+                    (!reffedType?.escapedName || reffedType.escapedName !== "__type") &&
                     !typ.aliasTypeArguments &&
+                    !isTypeArgument &&
                     // some fullTypeNames are type-arguments and aren't actually names!
                     /^[0-9A-Za-z._]+$/.exec(fullTypeName)
                 ) {
