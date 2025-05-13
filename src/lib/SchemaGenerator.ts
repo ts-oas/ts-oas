@@ -567,9 +567,61 @@ export class SchemaGenerator {
                     definition.type = typeof value;
                     definition.enum = [value];
                 } else if (arrayType !== undefined) {
-                    definition.type = "array";
-                    if (!definition.items) {
-                        definition.items = this.getTypeDefinition(arrayType);
+                    if (
+                        propertyType.flags & ts.TypeFlags.Object &&
+                        (propertyType as ts.ObjectType).objectFlags &
+                        (ts.ObjectFlags.Anonymous | ts.ObjectFlags.Interface | ts.ObjectFlags.Mapped)
+                    ) {
+                        definition.type = "object";
+                        definition.additionalProperties = false;
+                        definition.patternProperties = {
+                            ["^[0-9]+$"]: this.getTypeDefinition(arrayType),
+                        };
+                        if (!!Array.from((<any>propertyType).members)?.find((member: [string]) => member[0] !== "__index")) {
+                            this.getClassDefinition(propertyType, definition);
+                        }
+                    } else if (propertyType.flags & ts.TypeFlags.TemplateLiteral) {
+                        definition.type = "string";
+                        // @ts-ignore
+                        const {texts, types} = propertyType;
+                        const pattern: string[] = [];
+                        for (let i = 0; i < texts.length; i++) {
+                            const text = texts[i].replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
+                            const type = types[i];
+
+                            if (i === 0) {
+                                pattern.push(`^`);
+                            }
+
+                            if (type) {
+                                if (type.flags & ts.TypeFlags.String) {
+                                    pattern.push(`${text}.*`);
+                                }
+
+                                if (type.flags & ts.TypeFlags.Number
+                                    || type.flags & ts.TypeFlags.BigInt) {
+                                    pattern.push(`${text}[0-9]*`);
+                                }
+
+                                if (type.flags & ts.TypeFlags.Undefined) {
+                                    pattern.push(`${text}undefined`);
+                                }
+
+                                if (type.flags & ts.TypeFlags.Null) {
+                                    pattern.push(`${text}null`);
+                                }
+                            }
+
+                            if (i === texts.length - 1) {
+                                pattern.push(`${text}$`);
+                            }
+                        }
+                        definition.pattern = pattern.join("");
+                    } else {
+                        definition.type = "array";
+                        if (!definition.items) {
+                            definition.items = this.getTypeDefinition(arrayType);
+                        }
                     }
                 } else {
                     // Report that type could not be processed
@@ -1010,10 +1062,6 @@ export class SchemaGenerator {
             reffedType = undefined;
         }
 
-        const isTypeArgument = reffedType && <number>typ.flags === 1049600;
-        if (isTypeArgument) {
-            asRef = false;
-        }
 
         let returnedDefinition = definition; // returned definition, may be a $ref
 
@@ -1097,6 +1145,11 @@ export class SchemaGenerator {
             }
         }
 
+        // handle type arguments
+        if (typ.aliasSymbol?.escapedName && fullTypeName !== typ.aliasSymbol?.escapedName) {
+            fullTypeName = typ.aliasSymbol.escapedName;
+        }
+
         // Handle recursive types
         if (!isRawType || !!typ.aliasSymbol) {
             if (this.recursiveTypeRef.has(fullTypeName)) {
@@ -1107,7 +1160,6 @@ export class SchemaGenerator {
                     this.args.ref &&
                     (!reffedType?.escapedName || reffedType.escapedName !== "__type") &&
                     !typ.aliasTypeArguments &&
-                    !isTypeArgument &&
                     // some fullTypeNames are type-arguments and aren't actually names!
                     /^[0-9A-Za-z._]+$/.exec(fullTypeName)
                 ) {

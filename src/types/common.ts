@@ -96,6 +96,9 @@ export interface Definition extends Omit<OpenAPIV3.BaseSchemaObject, RedefinedFi
     properties?: {
         [name: string]: Definition;
     };
+    patternProperties?: {
+        [name: string]: Definition;
+    };
     $ref?: string;
 }
 

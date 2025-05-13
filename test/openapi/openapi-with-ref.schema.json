@@ -23,10 +23,7 @@
           },
           "date": {
             "format": "date",
-            "anyOf": [
-              { "type": "null" },
-              { "type": "string", "format": "date-time" }
-            ]
+            "anyOf": [{ "type": "null" }, { "type": "string", "format": "date-time" }]
           },
           "meta-data": {
             "type": "object",
@@ -35,11 +32,18 @@
             },
             "properties": {}
           },
-          "statuses": { "type": "array", "items": { "enum": ["four", "one", "three", "two"], "type": "string" } }
+          "version": {
+            "anyOf": [
+              { "pattern": "^A_v.*$", "type": "string" },
+              { "pattern": "^B_v.*$", "type": "string" }
+            ]
+          },
+          "statuses": { "type": "array", "items": { "$ref": "#/components/schemas/STATUS" } }
         },
-        "required": ["id", "meta-data", "statuses", "title"]
+        "required": ["id", "meta-data", "statuses", "title", "version"]
       },
       "GetAllBooksQueryRes": { "type": "array", "items": { "$ref": "#/components/schemas/Book" } },
+      "STATUS": { "enum": ["four", "one", "three", "two"], "type": "string" },
       "ResponseUnsuccessData": {
         "type": "object",
         "properties": { "msg": { "type": "string", "enum": ["This is unsuccess."] } },
@@ -67,10 +71,7 @@
           },
           "date": {
             "format": "date",
-            "anyOf": [
-              { "type": "null" },
-              { "type": "string", "format": "date-time" }
-            ]
+            "anyOf": [{ "type": "null" }, { "type": "string", "format": "date-time" }]
           },
           "meta-data": {
             "type": "object",
@@ -79,9 +80,15 @@
             },
             "properties": {}
           },
-          "statuses": { "type": "array", "items": { "enum": ["four", "one", "three", "two"], "type": "string" } }
+          "version": {
+            "anyOf": [
+              { "pattern": "^A_v.*$", "type": "string" },
+              { "pattern": "^B_v.*$", "type": "string" }
+            ]
+          },
+          "statuses": { "type": "array", "items": { "$ref": "#/components/schemas/STATUS" } }
         },
-        "required": ["id", "meta-data", "statuses", "title"]
+        "required": ["id", "meta-data", "statuses", "title", "version"]
       }
     }
   },

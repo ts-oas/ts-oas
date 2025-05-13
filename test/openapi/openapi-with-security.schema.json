@@ -53,10 +53,7 @@
                           },
                           "date": {
                             "format": "date",
-                            "anyOf": [
-                              { "type": "null" },
-                              { "type": "string", "format": "date-time" }
-                            ]
+                            "anyOf": [{ "type": "null" }, { "type": "string", "format": "date-time" }]
                           },
                           "meta-data": {
                             "type": "object",
@@ -65,12 +62,18 @@
                             },
                             "properties": {}
                           },
+                          "version": {
+                            "anyOf": [
+                              { "pattern": "^A_v.*$", "type": "string" },
+                              { "pattern": "^B_v.*$", "type": "string" }
+                            ]
+                          },
                           "statuses": {
                             "type": "array",
                             "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
                           }
                         },
-                        "required": ["id", "meta-data", "statuses", "title"]
+                        "required": ["id", "meta-data", "statuses", "title", "version"]
                       }
                     }
                   },
@@ -155,10 +158,7 @@
                         },
                         "date": {
                           "format": "date",
-                          "anyOf": [
-                            { "type": "null" },
-                            { "type": "string", "format": "date-time" }
-                          ]
+                          "anyOf": [{ "type": "null" }, { "type": "string", "format": "date-time" }]
                         },
                         "meta-data": {
                           "type": "object",
@@ -167,12 +167,18 @@
                           },
                           "properties": {}
                         },
+                        "version": {
+                          "anyOf": [
+                            { "pattern": "^A_v.*$", "type": "string" },
+                            { "pattern": "^B_v.*$", "type": "string" }
+                          ]
+                        },
                         "statuses": {
                           "type": "array",
                           "items": { "enum": ["four", "one", "three", "two"], "type": "string" }
                         }
                       },
-                      "required": ["id", "meta-data", "statuses", "title"]
+                      "required": ["id", "meta-data", "statuses", "title", "version"]
                     }
                   },
                   "required": ["data", "success"]

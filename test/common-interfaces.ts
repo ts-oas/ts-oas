@@ -20,5 +20,9 @@ export interface Book {
    */
   date?: Date | null;
   "meta-data": Record<string, string>;
+  version: VersionTagString;
   statuses: STATUS[];
 }
+
+export type VersionTag = 'A' | 'B';
+export type VersionTagString = `${VersionTag}_v${string}`;
