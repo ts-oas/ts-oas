@@ -1,20 +1,13 @@
 import * as ts from "typescript";
-import { OpenAPIV3 } from "openapi-types";
+import { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 import {
-    Definition,
     HTTPMethod,
     HttpStatusCode,
-    OpenApiSpecData,
-    OpenApiSpec,
-    OperationObject,
-    ParameterObject,
-    RequestBodyObject,
-    ResponsesObject,
-    Version,
-} from "..";
+    OAS,
+} from "../types";
 import { SchemaGenerator } from "./SchemaGenerator";
 
-export class TypescriptOAS extends SchemaGenerator {
+export class TsOAS extends SchemaGenerator {
     private isValidObject(type: ts.Type): boolean {
         if (
             !(type.flags === ts.TypeFlags.Object) &&
@@ -54,11 +47,11 @@ export class TypescriptOAS extends SchemaGenerator {
         return type.value;
     }
 
-    private getPathParams(type: ts.Type): ParameterObject[] {
+    private getPathParams(type: ts.Type): OAS.Parameter[] {
         if (this.isEmptyObj(type)) return [];
         if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
 
-        const parameters: ParameterObject[] = [];
+        const parameters: OAS.Parameter[] = [];
 
         let schema = this.getTypeDefinition(type, this.args.ref, undefined, undefined, type.symbol);
 
@@ -74,20 +67,20 @@ export class TypescriptOAS extends SchemaGenerator {
                 required: schema.required?.includes(property) || false,
             };
 
-            if ((schema.properties[property] as Definition).description) {
-                param["description"] = (schema.properties[property] as Definition).description;
+            if ((schema.properties[property] as OAS.Definition).description) {
+                param["description"] = (schema.properties[property] as OAS.Definition).description;
             }
-            parameters.push({ ...param, schema: schema.properties[property] as Definition });
+            parameters.push({ ...param, schema: schema.properties[property] as OAS.Definition });
         }
 
         return parameters;
     }
 
-    private getQueryParams(type: ts.Type): ParameterObject[] {
+    private getQueryParams(type: ts.Type): OAS.Parameter[] {
         if (this.isEmptyObj(type)) return [];
         if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
 
-        const parameters: ParameterObject[] = [];
+        const parameters: OAS.Parameter[] = [];
 
         let schema = this.getTypeDefinition(type, this.args.ref, undefined, undefined, type.symbol);
 
@@ -103,22 +96,22 @@ export class TypescriptOAS extends SchemaGenerator {
                 required: schema.required?.includes(property) || false,
             };
 
-            if ((schema.properties[property] as Definition).description) {
-                param["description"] = (schema.properties[property] as Definition).description;
+            if ((schema.properties[property] as OAS.Definition).description) {
+                param["description"] = (schema.properties[property] as OAS.Definition).description;
             }
-            parameters.push({ ...param, schema: schema.properties[property] as Definition });
+            parameters.push({ ...param, schema: schema.properties[property] as OAS.Definition });
         }
 
         return parameters;
     }
 
-    private getBody(type: ts.Type, comments: Record<any, any> = {}): RequestBodyObject | null {
+    private getBody(type: ts.Type, comments: Record<any, any> = {}): OAS.RequestBody | null {
         if (this.isEmptyObj(type)) return null;
         if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
 
         const schema = this.getTypeDefinition(type, this.args.ref, undefined, undefined, type.symbol);
 
-        const body: RequestBodyObject = {} as any;
+        const body: OAS.RequestBody = {} as any;
 
         const contentType = comments["contentType"] || this.args.defaultContentType;
         delete comments["contentType"];
@@ -134,11 +127,11 @@ export class TypescriptOAS extends SchemaGenerator {
         return body;
     }
 
-    private getResponses(type: ts.Type): ResponsesObject {
+    private getResponses(type: ts.Type): OAS.Responses {
         if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
         if (!type.getProperties().length) throw new Error('"responses" must have at least one property.');
 
-        const responses: ResponsesObject = {};
+        const responses: OAS.Responses = {};
 
         for (const respSymbol of type.getProperties()) {
             let respType = this.getTypeFromSymbol(respSymbol);
@@ -195,7 +188,7 @@ export class TypescriptOAS extends SchemaGenerator {
         if (typeDef?.items === undefined) return [];
 
         for (const itemIndex in typeDef.items) {
-            const obj = typeDef.items[itemIndex] as Definition;
+            const obj = typeDef.items[itemIndex] as OAS.Definition;
             for (const property in obj.properties) {
                 const propertyItems = obj.properties[property].items;
                 security.push({
@@ -340,10 +333,10 @@ export class TypescriptOAS extends SchemaGenerator {
         return result;
     }
 
-    public getOpenApiSpec<T extends Version>(
+    public getOpenApiSpec<T extends OAS.Version>(
         typeNames: (string | RegExp)[],
-        specData: OpenApiSpecData<T> = {}
-    ): OpenApiSpec<T> {
+        specData: OAS.SpecData<T> = {}
+    ): OAS.Spec<T> {
         const filteredTypes: string[] = [];
 
         typeNames.forEach((typeName) => {
@@ -357,13 +350,16 @@ export class TypescriptOAS extends SchemaGenerator {
         this.resetSchemaSpecificProperties();
         this.refPath = "#/components/schemas/";
 
-        const spec: OpenApiSpec<T> = {
+        const spec: OAS.Spec<T> = {
             openapi: specData.openapi || ("3.1.0" as T),
             info: specData.info || { title: "OpenAPI specification", version: "1.0.0" },
-            ...specData,
+            tags: specData.tags,
+            servers: specData.servers,
+            security: specData.security,
+            externalDocs: specData.externalDocs,
             components: specData.components,
             paths: {},
-        };
+        } satisfies OAS.Spec<T>;
 
         if (spec.openapi === "3.1.0" && !this.options.hasOwnProperty("nullableKeyword")) {
             this.args.nullableKeyword = false;
@@ -387,7 +383,7 @@ export class TypescriptOAS extends SchemaGenerator {
             if (!methodSymbol) throw new Error(`[${typeName}] "method" is required.`);
             if (!responsesSymbol) throw new Error(`[${typeName}] "responses" is required.`);
 
-            const operation: OperationObject = {
+            const operation: OAS.Operation = {
                 operationId: type.aliasSymbol?.escapedName as string,
             };
 
@@ -450,7 +446,7 @@ export class TypescriptOAS extends SchemaGenerator {
         return spec;
     }
 
-    public getSchemas(typeNames: (string | RegExp)[]): { [key: string]: Definition } {
+    public getSchemas(typeNames: (string | RegExp)[]): { [key: string]: OAS.Definition } {
         if (!typeNames || !typeNames.length) {
             return {};
         }
@@ -464,7 +460,7 @@ export class TypescriptOAS extends SchemaGenerator {
             }
         });
 
-        const root: { definitions: { [key: string]: Definition } } = {
+        const root: { definitions: { [key: string]: OAS.Definition } } = {
             definitions: {},
         };
 

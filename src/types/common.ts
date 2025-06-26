@@ -1,6 +1,6 @@
-import { OpenAPIV3 } from "openapi-types";
 import { HttpStatusCode } from "./enums/HttpStatusCode.enum";
 import { HTTPMethod } from "./enums/HTTPMethod.enum";
+import { OAS } from "./spec";
 
 export type AnnotationKeywords = {
     [prop: string]: boolean | "custom";
@@ -78,29 +78,12 @@ export type Options = {
     /**
      * A function that will run over each generated schema.
      */
-    schemaProcessor?: (schema: Definition) => Definition;
+    schemaProcessor?: (schema: OAS.Definition) => OAS.Definition;
 };
 
 export type PrimitiveType = number | boolean | string | null;
 
 export type MetaDefinitionFields = "ignore";
-type RedefinedFields = "type" | "items" | "allOf" | "oneOf" | "anyOf" | "not" | "additionalProperties" | "properties";
-export interface Definition extends Omit<OpenAPIV3.BaseSchemaObject, RedefinedFields> {
-    type?: string | string[];
-    items?: Definition | Definition[];
-    allOf?: Definition[];
-    oneOf?: Definition[];
-    anyOf?: Definition[];
-    not?: Definition;
-    additionalProperties?: Definition | boolean;
-    properties?: {
-        [name: string]: Definition;
-    };
-    patternProperties?: {
-        [name: string]: Definition;
-    };
-    $ref?: string;
-}
 
 export type Api = {
     path: string;

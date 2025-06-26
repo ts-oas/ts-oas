@@ -1,7 +1,8 @@
 import * as path from "path";
 import { createHash } from "crypto";
 import * as ts from "typescript";
-import { Definition, Options } from "..";
+import { Options } from "../types/common";
+import { OAS } from "../types";
 import { AnnotationKeywords, MetaDefinitionFields, PrimitiveType, UnionModifier } from "../types/common";
 import { openApiKeywords, refKeywords, REGEX_FILE_NAME_OR_SPACE, REGEX_REQUIRE, validationKeywords } from "../constant";
 
@@ -42,14 +43,14 @@ export class SchemaGenerator {
      * This map holds references to all reffed definitions, including schema
      * overrides and generated definitions.
      */
-    protected reffedDefinitions: { [key: string]: Definition } = {};
+    protected reffedDefinitions: { [key: string]: OAS.Definition } = {};
     protected refPath: string;
 
     /**
      * This map only holds explicit schema overrides. This helps differentiate between
      * user defined schema overrides and generated definitions.
      */
-    protected schemaOverrides = new Map<string, Definition>();
+    protected schemaOverrides = new Map<string, OAS.Definition>();
 
     protected recursiveTypeRef = new Map();
 
@@ -69,7 +70,7 @@ export class SchemaGenerator {
      */
     protected typeIdsByName: { [name: string]: number } = {};
 
-    protected get ReffedDefinitions(): { [key: string]: Definition } {
+    protected get ReffedDefinitions(): { [key: string]: OAS.Definition } {
         return this.reffedDefinitions;
     }
 
@@ -423,7 +424,7 @@ export class SchemaGenerator {
     /**
      * Parse the comments of a symbol into the definition and other annotations.
      */
-    protected parseCommentsIntoDefinition(symbol: ts.Symbol, definition: Definition, otherAnnotations: {}): void {
+    protected parseCommentsIntoDefinition(symbol: ts.Symbol, definition: OAS.Definition, otherAnnotations: {}): void {
         if (!symbol) {
             return;
         }
@@ -506,9 +507,9 @@ export class SchemaGenerator {
     protected getDefinitionForRootType(
         propertyType: ts.Type,
         reffedType: ts.Symbol,
-        definition: Definition,
+        definition: OAS.Definition,
         defaultNumberType = this.args.defaultNumberType
-    ): Definition {
+    ): OAS.Definition {
         const tupleType = this.resolveTupleType(propertyType);
 
         if (tupleType) {
@@ -651,7 +652,7 @@ export class SchemaGenerator {
         return undefined;
     }
 
-    protected getDefinitionForProperty(prop: ts.Symbol, node: ts.Node): Definition | null {
+    protected getDefinitionForProperty(prop: ts.Symbol, node: ts.Node): OAS.Definition | null {
         if (prop.flags & ts.SymbolFlags.Method) {
             return null;
         }
@@ -714,7 +715,7 @@ export class SchemaGenerator {
         return definition;
     }
 
-    protected getEnumDefinition(clazzType: ts.Type, definition: Definition): Definition {
+    protected getEnumDefinition(clazzType: ts.Type, definition: OAS.Definition): OAS.Definition {
         const node = clazzType.getSymbol()!.getDeclarations()![0];
         const fullName = this.tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
         const members: ts.NodeArray<ts.EnumMember> =
@@ -783,10 +784,10 @@ export class SchemaGenerator {
         unionType: ts.UnionType,
         prop: ts.Symbol,
         unionModifier: UnionModifier,
-        definition: Definition
-    ): Definition {
+        definition: OAS.Definition
+    ): OAS.Definition {
         const enumValues: PrimitiveType[] = [];
-        const schemas: Definition[] = [];
+        const schemas: OAS.Definition[] = [];
 
         const pushEnumValue = (val: PrimitiveType) => {
             if (enumValues.indexOf(val) === -1) {
@@ -820,7 +821,7 @@ export class SchemaGenerator {
         }
 
         if (enumValues.length > 0) {
-            const enumSchema: Definition = { enum: enumValues.sort() };
+            const enumSchema: OAS.Definition = { enum: enumValues.sort() };
 
             // If the enum values are just true and false, remove them as enum
             const isOnlyBooleans =
@@ -869,9 +870,9 @@ export class SchemaGenerator {
         return definition;
     }
 
-    protected getIntersectionDefinition(intersectionType: ts.IntersectionType, definition: Definition): Definition {
+    protected getIntersectionDefinition(intersectionType: ts.IntersectionType, definition: OAS.Definition): OAS.Definition {
         const simpleTypes: string[] = [];
-        const schemas: Definition[] = [];
+        const schemas: OAS.Definition[] = [];
 
         const pushSimpleType = (type: string) => {
             if (simpleTypes.indexOf(type) === -1) {
@@ -913,7 +914,7 @@ export class SchemaGenerator {
         return definition;
     }
 
-    protected getClassDefinition(clazzType: ts.Type, definition: Definition): any {
+    protected getClassDefinition(clazzType: ts.Type, definition: OAS.Definition): any {
         const node = clazzType.getSymbol()!.getDeclarations()![0];
 
         // Example: typeof globalThis may not have any declaration
@@ -1048,8 +1049,8 @@ export class SchemaGenerator {
         unionModifier = this.args.defaultUnionModifier,
         prop?: ts.Symbol,
         reffedType?: ts.Symbol
-    ): Definition {
-        const definition: Definition = {}; // real definition
+    ): OAS.Definition {
+        const definition: OAS.Definition = {}; // real definition
 
         // Ignore any number of Readonly and Mutable type wrappings, since they only add and remove readonly modifiers on fields and JSON Schema is not concerned with mutability
         while (
@@ -1067,7 +1068,7 @@ export class SchemaGenerator {
 
         // Parse property comments now to skip recursive if ignore.
         if (prop) {
-            const defs: Definition & { [k in MetaDefinitionFields]?: "" } = {};
+            const defs: OAS.Definition & { [k in MetaDefinitionFields]?: "" } = {};
             const others = {};
             this.parseCommentsIntoDefinition(prop, defs, others);
             if (defs.hasOwnProperty("ignore") || defs.hasOwnProperty("type")) {
@@ -1190,7 +1191,7 @@ export class SchemaGenerator {
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {
             if (asRef) {
                 // must be here to prevent recursivity problems
-                let reffedDefinition: Definition;
+                let reffedDefinition: OAS.Definition;
                 if (asTypeAliasRef && reffedType && typ.symbol !== reffedType && symbol) {
                     reffedDefinition = this.getTypeDefinition(typ, true, undefined, symbol, symbol);
                 } else {

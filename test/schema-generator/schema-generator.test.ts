@@ -1,7 +1,7 @@
 import { resolve } from "path";
 import { inspect } from "util";
 import { expect } from "chai";
-import TypescriptOAS, { createProgram } from "../../src";
+import { createProgram, TsOAS } from "../../src";
 import {
     schemaWithAdditionalProperties,
     schemaWithDefault,
@@ -33,7 +33,7 @@ const typeNames = [
 ];
 
 const program = createProgram(["types.ts"], { strictNullChecks: true }, resolve(__dirname));
-const tsoas = new TypescriptOAS(program, {});
+const tsoas = new TsOAS(program, {});
 
 const spec = tsoas.getSchemas(typeNames);
 

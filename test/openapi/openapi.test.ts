@@ -2,7 +2,7 @@ import { resolve } from "path";
 import { readFileSync, writeFileSync } from "fs";
 import { expect } from "chai";
 import SwaggerParser from "@apidevtools/swagger-parser";
-import TypescriptOAS, { createProgram } from "../../src";
+import { createProgram, TsOAS } from "../../src";
 import Ajv from "ajv";
 
 const openapiFile = JSON.parse(readFileSync(resolve(__dirname, `openapi.schema.json`), "utf8"));
@@ -29,7 +29,7 @@ describe("openapi", () => {
         const ajv = new Ajv();
         const schemaValidator = ajv.getSchema("http://json-schema.org/draft-07/schema")!;
 
-        const tsoas = new TypescriptOAS(program, {
+        const tsoas = new TsOAS(program, {
             customKeywords: ["thisIsCustom"],
             schemaProcessor: (schema) => {
                 if (schema.type !== "undefined") {
@@ -51,7 +51,7 @@ describe("openapi", () => {
     });
 
     it("should validate against SwaggerParser and json file with refs", async () => {
-        const tsoas = new TypescriptOAS(program, { customKeywords: ["thisIsCustom"], ref: true });
+        const tsoas = new TsOAS(program, { customKeywords: ["thisIsCustom"], ref: true });
         const spec = tsoas.getOpenApiSpec(typeNames);
 
         // writeFileSync(resolve(__dirname, `openapi-with-ref.schema.json`), JSON.stringify(spec), "utf8");
@@ -61,7 +61,7 @@ describe("openapi", () => {
     });
 
     it("should validate version 3.0.3 against SwaggerParser and json file", async () => {
-        const tsoas = new TypescriptOAS(program, { customKeywords: ["thisIsCustom"] });
+        const tsoas = new TsOAS(program, { customKeywords: ["thisIsCustom"] });
         const spec = tsoas.getOpenApiSpec(typeNames, { openapi: "3.0.3" });
 
         // writeFileSync(resolve(__dirname, `openapi-3.0.3.schema.json`), JSON.stringify(spec), "utf8");
@@ -71,7 +71,7 @@ describe("openapi", () => {
     });
 
     it("should validate against SwaggerParser and json file with security", async () => {
-        const tsoas = new TypescriptOAS(program, { customKeywords: ["thisIsCustom"] });
+        const tsoas = new TsOAS(program, { customKeywords: ["thisIsCustom"] });
         const spec = tsoas.getOpenApiSpec(typeNamesForSecureTests, {
             components: {
                 securitySchemes: {
@@ -96,7 +96,7 @@ describe("openapi", () => {
     });
 
     it("should validate against SwaggerParser and json file with default security for all apis", async () => {
-        const tsoas = new TypescriptOAS(program, { customKeywords: ["thisIsCustom"] });
+        const tsoas = new TsOAS(program, { customKeywords: ["thisIsCustom"] });
         const spec = tsoas.getOpenApiSpec(typeNamesForDefaultSecureTests, {
             security: [{ basicAuth: [] }, { bearerToken: ["book:write", "book:read"] }],
             components: {
@@ -122,7 +122,7 @@ describe("openapi", () => {
     });
 
     it("should have custom defaultContentType", async () => {
-        const tsoas = new TypescriptOAS(program, {
+        const tsoas = new TsOAS(program, {
             customKeywords: ["thisIsCustom"],
             defaultContentType: "application/json",
         });
@@ -136,7 +136,7 @@ describe("openapi", () => {
     });
 
     it("should validate against SwaggerParser and json file using ApiMapper", async () => {
-        const tsoas = new TypescriptOAS(program, { customKeywords: ["thisIsCustom"] });
+        const tsoas = new TsOAS(program, { customKeywords: ["thisIsCustom"] });
         const spec = tsoas.getOpenApiSpec(typeNamesForMapperTest);
 
         expect(spec).to.deep.equal(openapiFile);
@@ -148,7 +148,7 @@ describe("openapi", () => {
         const info = { title: "custom title", version: "12.3.4", description: "this is description" };
         const components = { schemas: { AAA: { type: "boolean" } } };
 
-        const tsoas = new TypescriptOAS(program, { customKeywords: ["thisIsCustom"] });
+        const tsoas = new TsOAS(program, { customKeywords: ["thisIsCustom"] });
         const spec = tsoas.getOpenApiSpec(typeNames, { tags, info, components });
 
         expect(spec.tags).to.equal(tags);
@@ -157,7 +157,7 @@ describe("openapi", () => {
     });
 
     it("should validate against json file with custom operation properties", async () => {
-        const tsoas = new TypescriptOAS(program, {
+        const tsoas = new TsOAS(program, {
             customKeywords: ["thisIsCustom"],
             customOperationProperties: true,
         });
