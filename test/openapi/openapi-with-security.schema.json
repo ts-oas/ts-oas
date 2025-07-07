@@ -19,6 +19,7 @@
         "tags": ["category", "books"],
         "description": "Sample description.",
         "summary": "List all Books",
+        "deprecated": true,
         "x-thisIsCustom": true,
         "parameters": [
           {

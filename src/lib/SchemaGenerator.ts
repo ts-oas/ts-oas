@@ -21,7 +21,6 @@ export class SchemaGenerator {
         this.args = settings;
         this.annotationKeywords = {
             ...validationKeywords,
-            ...openApiKeywords,
             ...this.args.customKeywords?.reduce((acc, word) => ({ ...acc, [word]: "custom" }), {}),
         };
     }
@@ -424,10 +423,12 @@ export class SchemaGenerator {
     /**
      * Parse the comments of a symbol into the definition and other annotations.
      */
-    protected parseCommentsIntoDefinition(symbol: ts.Symbol, definition: OAS.Definition, otherAnnotations: {}): void {
+    protected parseCommentsIntoDefinition(symbol: ts.Symbol, definition: OAS.Definition, otherAnnotations: {}, isOpenAPI = false): void {
         if (!symbol) {
             return;
         }
+
+        const annotationKeywords = isOpenAPI ? { ...this.annotationKeywords, ...openApiKeywords } : this.annotationKeywords;
 
         if (!this.isFromDefaultLib(symbol)) {
             // the comments for a symbol
@@ -464,7 +465,7 @@ export class SchemaGenerator {
             // to process the "." and beyond from the value
             if (text.startsWith(".")) {
                 const valueParts = text.slice(1).split(" ");
-                const keywordExisted = this.annotationKeywords[valueParts[0]];
+                const keywordExisted = annotationKeywords[valueParts[0]];
                 if (keywordExisted) {
                     definition[name] = {
                         ...definition[name],
@@ -480,7 +481,7 @@ export class SchemaGenerator {
             // In TypeScript 3.7+, the "." is kept as part of the annotation name
             if (name.includes(".")) {
                 const nameParts = name.split(".");
-                const keywordExisted = this.annotationKeywords[nameParts[1]];
+                const keywordExisted = annotationKeywords[nameParts[1]];
                 if (nameParts.length === 2 && keywordExisted) {
                     definition[nameParts[0]] = {
                         ...definition[nameParts[0]],
@@ -492,7 +493,7 @@ export class SchemaGenerator {
                 }
             }
 
-            const keywordExisted = this.annotationKeywords[name];
+            const keywordExisted = annotationKeywords[name];
             if (keywordExisted) {
                 definition[(keywordExisted === "custom" ? this.args.customKeywordPrefix : "") + name] = text
                     ? this.parseValue(symbol, name, text)

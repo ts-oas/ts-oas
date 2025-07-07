@@ -135,6 +135,7 @@ export namespace OAS {
         description?: string;
         operationId?: string;
         tags?: string[];
+        deprecated?: boolean;
         requestBody?: RequestBody;
         parameters?: Parameter[];
         responses?: Responses;

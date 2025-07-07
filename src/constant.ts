@@ -77,6 +77,7 @@ export const openApiKeywords = {
     operationId: true,
     tags: true,
     contentType: true,
+    deprecated: true,
 };
 
 /**

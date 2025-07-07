@@ -353,13 +353,14 @@ export class TsOAS extends SchemaGenerator {
         const spec: OAS.Spec<T> = {
             openapi: specData.openapi || ("3.1.0" as T),
             info: specData.info || { title: "OpenAPI specification", version: "1.0.0" },
-            tags: specData.tags,
-            servers: specData.servers,
-            security: specData.security,
-            externalDocs: specData.externalDocs,
-            components: specData.components,
             paths: {},
         } satisfies OAS.Spec<T>;
+
+        if (specData.tags) spec.tags = specData.tags;
+        if (specData.servers) spec.servers = specData.servers;
+        if (specData.security) spec.security = specData.security;
+        if (specData.externalDocs) spec.externalDocs = specData.externalDocs;
+        if (specData.components) spec.components = specData.components;
 
         if (spec.openapi === "3.1.0" && !this.options.hasOwnProperty("nullableKeyword")) {
             this.args.nullableKeyword = false;
@@ -369,7 +370,7 @@ export class TsOAS extends SchemaGenerator {
             const type = this.symbols[typeName];
 
             const comments = {};
-            this.parseCommentsIntoDefinition(type.aliasSymbol!, comments, {});
+            this.parseCommentsIntoDefinition(type.aliasSymbol!, comments, {}, true);
 
             const pathSymbol = type.getProperty("path");
             const methodSymbol = type.getProperty("method");
