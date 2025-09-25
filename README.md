@@ -48,10 +48,12 @@ type Api = {
 We have `interfaces.ts` where our API types are present:
 
 ```ts
-import { ApiMapper } from "ts-oas"; // Recommended to use ApiMapper to help to keep the format valid.
+import { ApiMapper } from "ts-oas";
+// ApiMapper only validates the type structure at compile time,
+// it's optional, omit it if you need dependency-free interface files.
 
-export type GetBarAPI = ApiMapper<{
-    path: "/foo/bar/:id";
+export type GetBarAPI = {
+    path: "/foo/bar/{id}";
     method: "GET";
     params: {
         id: number;
@@ -60,13 +62,11 @@ export type GetBarAPI = ApiMapper<{
         from_date: Date;
     };
     responses: {
-        /**
-         * @contentType application/json
-         */
+        /** @contentType application/json */
         "200": Bar;
         "404": { success: false };
     };
-}>;
+};
 
 /**
  * Sample description.
@@ -77,9 +77,7 @@ export type AddBarAPI = ApiMapper<{
     method: "POST";
     body: Bar;
     responses: {
-        /**
-         * No content
-         */
+        /** No content */
         "201": never;
     };
 }>;
@@ -147,7 +145,7 @@ Run the above script.
         }
     },
     "paths": {
-        "/foo/bar/:id": {
+        "/foo/bar/{id}": {
             "get": {
                 "operationId": "GetBarAPI",
                 "parameters": [

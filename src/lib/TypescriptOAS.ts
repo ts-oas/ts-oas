@@ -143,7 +143,7 @@ export class TsOAS extends SchemaGenerator {
             if (!this.isValidObject(respType)) throw new Error("Expected a valid Object.");
 
             const comments = {};
-            this.parseCommentsIntoDefinition(respSymbol, comments, {});
+            this.parseCommentsIntoDefinition(respSymbol, comments, {}, true);
 
             responses[respSymbol.escapedName as string] = {} as any;
 

@@ -1,6 +1,6 @@
 {
   "name": "ts-oas",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Automatically generate OpenAPI specifications from opinionated Typescript types.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

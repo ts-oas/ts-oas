@@ -56,9 +56,9 @@ interface EditBookQuery extends GetAllBooksQuery {
 interface EditBookRes extends Book {}
 
 type EditBookApi = {
-    path: "/category/book/:id";
+    path: "/category/book/{id}";
     method: "PATCH";
-    param: { id: number };
+    params: { id: number };
     query: EditBookQuery;
     body: {};
     responses: {
@@ -74,9 +74,9 @@ type EditBookApi = {
  * @operationId Edit Book Secure Api
  */
 type EditBookSecureApi = ApiMapper<{
-    path: "/category/book/:id";
+    path: "/category/book/{id}";
     method: "PATCH";
-    param: { id: number };
+    params: { id: number };
     query: EditBookQuery;
     body: {};
     responses: {
@@ -95,16 +95,15 @@ type EditBookSecureApi = ApiMapper<{
 type EditBookApiWithMapper = ApiMapper<EditBookApi>;
 
 type EditBookApiWithCustomProperties = {
-    path: "/category/book-with-custom-properties/:id";
+    path: "/category/book-with-custom-properties/{id}";
     method: "PATCH";
-    param: { id: number };
+    params: { id: number };
     query: EditBookQuery;
     body: {};
     responses: {
+        /** @contentType application/json */
         "200": Response<EditBookRes>;
-        /**
-         * No Content
-         */
+        /** No Content */
         "204": never;
     };
     "x-amazon-apigateway-integration": {

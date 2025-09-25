@@ -111,10 +111,11 @@
         }
       }
     },
-    "/category/book/:id": {
+    "/category/book/{id}": {
       "patch": {
         "operationId": "EditBookApi",
         "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "number" } },
           { "name": "another_field", "in": "query", "required": true, "schema": { "type": "string" } },
           {
             "name": "query-status",
@@ -176,10 +177,11 @@
         }
       }
     },
-    "/category/book-with-custom-properties/:id": {
+    "/category/book-with-custom-properties/{id}": {
       "patch": {
         "operationId": "EditBookApiWithCustomProperties",
         "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "number" } },
           { "name": "another_field", "in": "query", "required": true, "schema": { "type": "string" } },
           {
             "name": "query-status",
@@ -196,7 +198,7 @@
           "200": {
             "description": "",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
