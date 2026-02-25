@@ -26,6 +26,7 @@
     "ts-oas": "./bin/ts-oas"
   },
   "dependencies": {
+    "fast-glob": "^3.3.3",
     "openapi-types": "^12.1.3",
     "typescript": "~5.8.3",
     "yargs": "^17.7.2"
