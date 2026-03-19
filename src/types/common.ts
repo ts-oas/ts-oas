@@ -35,11 +35,6 @@ export type Options = {
      */
     uniqueNames?: boolean;
     /**
-     * Uses `ts-node/register` as a runtime argument. It enables you to directly execute TypeScript on Node.js without precompiling.
-     * @default false
-     */
-    tsNodeRegister?: boolean;
-    /**
      * Provides `nullable: true` for nullable fields, otherwise set `type: "null"`.
      * @default true
      */

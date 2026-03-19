@@ -1,6 +1,10 @@
-import { resolve } from "path";
+import { resolve, dirname } from "path";
 import { expect } from "chai";
 import { createProgram } from "../../src";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const fixturesDir = resolve(__dirname, "fixtures");
 const tsconfigPath = resolve(fixturesDir, "tsconfig.json");

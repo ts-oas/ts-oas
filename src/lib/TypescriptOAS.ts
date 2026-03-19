@@ -177,12 +177,12 @@ export class TsOAS extends SchemaGenerator {
         return responses;
     }
 
-    private getSecurity(type: ts.Type): OpenAPIV3.SecurityRequirementObject[] | undefined {
+    private getSecurity(type: ts.Type): OpenAPIV3.SecurityRequirementObject[] | OpenAPIV3_1.SecurityRequirementObject[] | undefined {
         if (this.isEmptyObj(type)) return undefined;
         if (!this.isValidObject(type)) throw new Error("Expected a valid Object.");
         if (this.getTypeDefinition(type).type !== "array") throw new Error("Expected to be an array");
 
-        const security: OpenAPIV3.SecurityRequirementObject[] = [];
+        const security: OpenAPIV3.SecurityRequirementObject[] | OpenAPIV3_1.SecurityRequirementObject[] = [];
         const typeDef = this.getTypeDefinition(type);
 
         if (typeDef?.items === undefined) return [];

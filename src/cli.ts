@@ -1,9 +1,9 @@
 import { readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
-import * as yargs from "yargs";
-import TypescriptOAS, { createProgram } from ".";
+import yargs from "yargs/yargs";
+import { TsOAS, createProgram } from ".";
 
-const argv = yargs
+const argv = yargs(process.argv.slice(2))
     .scriptName("ts-oas")
     .usage(
         "Usage: \u001b[0;33m$0 <file-paths> <type-names> [options]\u001b[0m\n\n<file-paths> : Comma-separated list of relative .ts file paths which contain types.\n<type-names> : Comma-separated list of type names (Regex/exact name) to be considered in files."
@@ -12,7 +12,7 @@ const argv = yargs
     .alias("h", "help")
     .alias("v", "version")
     .epilogue(
-        "Generate OpenAPI specifications from Typescript types.\nFor a full documentation, visit the homepage.\n\nHomepage: https://github.com/ts-oas/ts-oas 'Copyright 2023'"
+        "Generate OpenAPI specifications from Typescript types.\nFor a full documentation, visit the homepage.\n\nHomepage: https://github.com/ts-oas/ts-oas"
     )
     .example("$0 ./interfaces/sample.ts myApi,mySecondApi", "")
     .demandCommand(2, "\u001b[0;31mBoth <file-paths> and <type-names> are required arguments.\u001b[0m")
@@ -55,7 +55,7 @@ const OpenApiArgs = {
 };
 
 const program = createProgram(programArgs.files, programArgs.tsCompilerOptions, resolve());
-const tsoas = new TypescriptOAS(program, OpenApiArgs.options);
+const tsoas = new TsOAS(program, OpenApiArgs.options);
 
 let result: Record<any, any>;
 
