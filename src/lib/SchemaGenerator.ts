@@ -6,7 +6,7 @@ import { OAS } from "../types";
 import { AnnotationKeywords, MetaDefinitionFields, PrimitiveType, UnionModifier } from "../types/common";
 import { openApiKeywords, refKeywords, REGEX_FILE_NAME_OR_SPACE, REGEX_REQUIRE, validationKeywords } from "../constant";
 
-const vm = require("vm");
+import * as vm from "vm";
 
 type RequiredOptions = Required<Omit<Options, "schemaProcessor">> & Pick<Options, "schemaProcessor">;
 
@@ -83,9 +83,6 @@ export class SchemaGenerator {
             }
         }
 
-        if (settings.tsNodeRegister) {
-            require("ts-node/register");
-        }
 
         if (!settings.ignoreErrors) {
             const diagnostics = ts.getPreEmitDiagnostics(program);
@@ -268,7 +265,6 @@ export class SchemaGenerator {
             uniqueNames: false,
             defaultUnionModifier: "anyOf",
             defaultNumberType: "number",
-            tsNodeRegister: false,
             nullableKeyword: true,
             defaultContentType: "*/*",
             customOperationProperties: false,
@@ -585,7 +581,7 @@ export class SchemaGenerator {
                     } else if (propertyType.flags & ts.TypeFlags.TemplateLiteral) {
                         definition.type = "string";
                         // @ts-ignore
-                        const {texts, types} = propertyType;
+                        const { texts, types } = propertyType;
                         const pattern: string[] = [];
                         for (let i = 0; i < texts.length; i++) {
                             const text = texts[i].replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");

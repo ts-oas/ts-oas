@@ -1,9 +1,14 @@
-import { resolve } from "path";
+import { resolve, dirname } from "path";
 import { readFileSync, writeFileSync } from "fs";
 import { expect } from "chai";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { createProgram, TsOAS } from "../../src";
 import Ajv from "ajv";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 
 const openapiFile = JSON.parse(readFileSync(resolve(__dirname, `openapi.schema.json`), "utf8"));
 const openapiWithRefFile = JSON.parse(readFileSync(resolve(__dirname, `openapi-with-ref.schema.json`), "utf8"));
@@ -130,7 +135,7 @@ describe("openapi", () => {
 
         const pathKeys = Object.keys(spec.paths);
         const pathMethodKeys = Object.keys(spec.paths[pathKeys[0]]);
-        expect(spec.paths[pathKeys[0]][pathMethodKeys[0]]["responses"]["200"]["content"]).to.have.property(
+        expect((spec.paths[pathKeys[0]] as any)[pathMethodKeys[0]]["responses"]["200"]["content"]).to.have.property(
             "application/json"
         );
     });

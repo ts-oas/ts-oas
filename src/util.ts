@@ -1,6 +1,7 @@
 import * as path from "path";
 import * as ts from "typescript";
-import * as fg from "fast-glob";
+import * as fastGlob from "fast-glob";
+const fg = (fastGlob as any).default || fastGlob;
 
 function hasGlobPattern(entry: string): boolean {
     return /[*?]/.test(entry);

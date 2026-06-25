@@ -1,7 +1,12 @@
-import { resolve } from "path";
+import { resolve, dirname } from "path";
 import { inspect } from "util";
 import { expect } from "chai";
 import { createProgram, TsOAS } from "../../src";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 import {
     schemaWithAdditionalProperties,
     schemaWithDefault,

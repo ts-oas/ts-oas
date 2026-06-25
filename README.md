@@ -3,8 +3,9 @@
 [![NPM version](https://img.shields.io/npm/v/ts-oas.svg)](https://www.npmjs.com/package/ts-oas)
 ![GitHub License](https://img.shields.io/github/license/ts-oas/ts-oas)
 ![NPM Unpacked Size](https://img.shields.io/npm/unpacked-size/ts-oas)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ts-oas/ts-oas)
 
-Automatically generate OpenAPI (formerly Swagger) specifications from opinionated Typescript types. Supports OpenAPI **v3.1** and **v3.0**. Requires interfaces/types in a specific format.
+Automatically generate OpenAPI (formerly Swagger) specifications from _opinionated_ Typescript types. Supports OpenAPI **v3.1** and **v3.0**. Requires interfaces/types in a specific format.
 
 ## Benefits
 
@@ -395,12 +396,6 @@ Ignores errors in Typescript files. May introduce wrong schemas.
 > _default: false_
 
 Replaces every type name with a unique hash to avoid duplication issues.
-
-#### `tsNodeRegister`
-
-> _default: false_
-
-Uses `ts-node/register` as a runtime argument, enabling direct execution of TypeScript on Node.js without precompiling.
 
 #### `nullableKeyword`
 
