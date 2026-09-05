@@ -1,5 +1,5 @@
 import * as path from "path";
-import * as ts from "typescript";
+import ts from "typescript";
 import * as fastGlob from "fast-glob";
 const fg = (fastGlob as any).default || fastGlob;
 
@@ -7,7 +7,18 @@ function hasGlobPattern(entry: string): boolean {
     return /[*?]/.test(entry);
 }
 
+function ensureCompilerApi(): void {
+    if (typeof (ts as any).createProgram !== "function") {
+        throw new Error(
+            `[ts-oas] TypeScript v${ts.version || "unknown"} does not expose a JavaScript compiler API. ` +
+            `TypeScript 7.0 does not ship with programmatic APIs (planned for TS 7.1). ` +
+            `Ensure ts-oas resolves its internal TypeScript engine (<7.0.0), or install @typescript/typescript6.`
+        );
+    }
+}
+
 function parseConfigFile(configFileName: string): ts.ParsedCommandLine {
+    ensureCompilerApi();
     const result = ts.parseConfigFileTextToJson(configFileName, ts.sys.readFile(configFileName)!);
     return ts.parseJsonConfigFileContent(
         result.config,
@@ -43,6 +54,7 @@ export function createProgram(
     tsCompilerOptions: string | Record<any, any> = {},
     basePath: string = "./"
 ): ts.Program {
+    ensureCompilerApi();
     let compilerOptions: ts.CompilerOptions;
     let resolvedFiles: string[];
 
@@ -80,13 +92,17 @@ export function createProgram(
         resolvedFiles = configParseResult.fileNames;
     }
 
+    // Default compiler options for AST parsing and type analysis across TS 4.7 - 6.0
     const options: ts.CompilerOptions = {
         noEmit: true,
         emitDecoratorMetadata: true,
         experimentalDecorators: true,
-        target: ts.ScriptTarget.ES5,
+        target: ts.ScriptTarget.ES2022,
         module: ts.ModuleKind.CommonJS,
         allowUnusedLabels: true,
+        skipLibCheck: true, // Prevents external ambient d.ts mismatch under different compiler versions
+        esModuleInterop: true, // Ensures consistent CJS/ESM interop across TypeScript versions
+        noImplicitAny: false, // Preserves permissive indexing for dynamic AST generation under TS 6+
     };
     for (const k in compilerOptions) {
         if (compilerOptions.hasOwnProperty(k)) {
