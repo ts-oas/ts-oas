@@ -20,6 +20,7 @@ import {
     schemaWithPattern,
     schemaWithRef,
     schemaWithTitle,
+    schemaWithRecord,
 } from "./types";
 
 const typeNames = [
@@ -35,6 +36,7 @@ const typeNames = [
     "TypeWithIgnore",
     "TypeWithPattern",
     "TypeWithExample",
+    "TypeWithRecord",
 ];
 
 const program = createProgram(["types.ts"], { strictNullChecks: true }, resolve(__dirname));
@@ -91,5 +93,9 @@ describe("schema-generator", () => {
 
     it("annotation :: TypeWithExample", async () => {
         expect(spec.TypeWithExample).to.deep.equal(schemaWithExample);
+    });
+
+    it("mapped type :: TypeWithRecord", async () => {
+        expect(spec.TypeWithRecord).to.deep.equal(schemaWithRecord);
     });
 });

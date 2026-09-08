@@ -1,4 +1,4 @@
-import * as ts from "typescript";
+import ts from "typescript";
 import { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 import {
     HTTPMethod,
@@ -61,16 +61,16 @@ export class TsOAS extends SchemaGenerator {
         }
 
         for (const property in schema.properties) {
-            const param = {
+            const propSchema = schema.properties[property];
+            const param: OAS.Parameter = {
                 name: property,
-                in: "path" as const,
+                in: "path",
                 required: schema.required?.includes(property) || false,
+                ...(propSchema.description ? { description: propSchema.description } : {}),
+                schema: propSchema,
             };
 
-            if ((schema.properties[property] as OAS.Definition).description) {
-                param["description"] = (schema.properties[property] as OAS.Definition).description;
-            }
-            parameters.push({ ...param, schema: schema.properties[property] as OAS.Definition });
+            parameters.push(param);
         }
 
         return parameters;
@@ -90,16 +90,16 @@ export class TsOAS extends SchemaGenerator {
         }
 
         for (const property in schema.properties) {
-            const param = {
+            const propSchema = schema.properties[property];
+            const param: OAS.Parameter = {
                 name: property,
-                in: "query" as const,
+                in: "query",
                 required: schema.required?.includes(property) || false,
+                ...(propSchema.description ? { description: propSchema.description } : {}),
+                schema: propSchema,
             };
 
-            if ((schema.properties[property] as OAS.Definition).description) {
-                param["description"] = (schema.properties[property] as OAS.Definition).description;
-            }
-            parameters.push({ ...param, schema: schema.properties[property] as OAS.Definition });
+            parameters.push(param);
         }
 
         return parameters;
@@ -142,7 +142,7 @@ export class TsOAS extends SchemaGenerator {
 
             if (!this.isValidObject(respType)) throw new Error("Expected a valid Object.");
 
-            const comments = {};
+            const comments: Record<string, any> = {};
             this.parseCommentsIntoDefinition(respSymbol, comments, {}, true);
 
             responses[respSymbol.escapedName as string] = {} as any;
@@ -187,10 +187,13 @@ export class TsOAS extends SchemaGenerator {
 
         if (typeDef?.items === undefined) return [];
 
-        for (const itemIndex in typeDef.items) {
-            const obj = typeDef.items[itemIndex] as OAS.Definition;
+        const items = Array.isArray(typeDef.items) ? typeDef.items : [typeDef.items];
+
+        for (const item of items) {
+            const obj = item as OAS.Definition;
             for (const property in obj.properties) {
-                const propertyItems = obj.properties[property].items;
+                const propDef = obj.properties[property] as OAS.Definition;
+                const propertyItems = propDef?.items;
                 security.push({
                     [property]:
                         propertyItems instanceof Array && propertyItems?.length
@@ -237,7 +240,7 @@ export class TsOAS extends SchemaGenerator {
                         else if (schema.items) {
                             // Handle array of objects case
                             if (Array.isArray(schema.items)) {
-                                const processedItems = schema.items.map((item) => {
+                                const processedItems = schema.items.map((item: OAS.Definition) => {
                                     if (item.type === "object" && item.properties) {
                                         return this.processCustomPropertiesObject(item.properties);
                                     }
@@ -280,7 +283,7 @@ export class TsOAS extends SchemaGenerator {
     }
 
     private processCustomPropertiesObject(properties: Record<string, any>): Record<string, any> {
-        const result = {};
+        const result: Record<string, any> = {};
 
         for (const [key, value] of Object.entries(properties)) {
             // For properties with enum values, use the first enum value
@@ -301,7 +304,7 @@ export class TsOAS extends SchemaGenerator {
                 else if (value.items) {
                     // Handle array of objects case
                     if (Array.isArray(value.items)) {
-                        const processedItems = value.items.map((item) => {
+                        const processedItems = value.items.map((item: OAS.Definition) => {
                             if (item.type === "object" && item.properties) {
                                 return this.processCustomPropertiesObject(item.properties);
                             }
@@ -354,7 +357,7 @@ export class TsOAS extends SchemaGenerator {
             openapi: specData.openapi || ("3.1.0" as T),
             info: specData.info || { title: "OpenAPI specification", version: "1.0.0" },
             paths: {},
-        } satisfies OAS.Spec<T>;
+        };
 
         if (specData.tags) spec.tags = specData.tags;
         if (specData.servers) spec.servers = specData.servers;
@@ -369,7 +372,7 @@ export class TsOAS extends SchemaGenerator {
         for (const typeName of filteredTypes) {
             const type = this.symbols[typeName];
 
-            const comments = {};
+            const comments: Record<string, any> = {};
             this.parseCommentsIntoDefinition(type.aliasSymbol!, comments, {}, true);
 
             const pathSymbol = type.getProperty("path");

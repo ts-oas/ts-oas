@@ -1,6 +1,6 @@
 import * as path from "path";
 import { createHash } from "crypto";
-import * as ts from "typescript";
+import ts from "typescript";
 import { Options } from "../types/common";
 import { OAS } from "../types";
 import { AnnotationKeywords, MetaDefinitionFields, PrimitiveType, UnionModifier } from "../types/common";
@@ -14,6 +14,7 @@ export class SchemaGenerator {
     constructor(program: ts.Program, options: Options = {}) {
         const { symbols, inheritingTypes, typeChecker, settings } = this.buildSchemaGenerator(program, options);
 
+        this.program = program;
         this.symbols = symbols;
         this.inheritingTypes = inheritingTypes;
         this.tc = typeChecker;
@@ -24,6 +25,7 @@ export class SchemaGenerator {
             ...this.args.customKeywords?.reduce((acc, word) => ({ ...acc, [word]: "custom" }), {}),
         };
     }
+    protected program: ts.Program;
     protected options: Options;
     protected args: RequiredOptions;
     protected tc: ts.TypeChecker;
@@ -43,7 +45,7 @@ export class SchemaGenerator {
      * overrides and generated definitions.
      */
     protected reffedDefinitions: { [key: string]: OAS.Definition } = {};
-    protected refPath: string;
+    protected refPath!: string;
 
     /**
      * This map only holds explicit schema overrides. This helps differentiate between
@@ -79,7 +81,7 @@ export class SchemaGenerator {
 
         for (const pref in options) {
             if (options.hasOwnProperty(pref)) {
-                settings[pref] = options[pref];
+                (settings as any)[pref] = (options as any)[pref];
             }
         }
 
@@ -111,7 +113,7 @@ export class SchemaGenerator {
         const typeChecker = program.getTypeChecker();
         const workingDir = program.getCurrentDirectory();
 
-        program.getRootFileNames().forEach(function (sourceFileName, _sourceFileIdx) {
+        program.getRootFileNames().forEach((sourceFileName, _sourceFileIdx) => {
             const sourceFile = program.getSourceFile(sourceFileName);
 
             function inspect(node: ts.Node) {
@@ -209,7 +211,7 @@ export class SchemaGenerator {
         program.getSourceFiles().forEach((sourceFile, _sourceFileIdx) => {
             const relativePath = path.relative(workingDir, sourceFile.fileName);
 
-            function inspect(node: ts.Node) {
+            const inspect = (node: ts.Node) => {
                 if (
                     node.kind === ts.SyntaxKind.ClassDeclaration ||
                     node.kind === ts.SyntaxKind.InterfaceDeclaration ||
@@ -400,7 +402,14 @@ export class SchemaGenerator {
     protected isFromDefaultLib(symbol: ts.Symbol) {
         const declarations = symbol.getDeclarations();
         if (declarations && declarations.length > 0) {
-            return declarations[0].parent.getSourceFile().hasNoDefaultLib;
+            const sf = declarations[0].getSourceFile();
+            // TS 6.0 no longer sets sf.hasNoDefaultLib on standard library files (e.g. lib.es5.d.ts).
+            // isSourceFileDefaultLibrary(sf) and the "Date" symbol check ensure cross-version compatibility.
+            return (
+                Boolean(sf.hasNoDefaultLib) ||
+                (this.program ? this.program.isSourceFileDefaultLibrary(sf) : false) ||
+                this.tc.getFullyQualifiedName(symbol) === "Date"
+            );
         }
         return false;
     }
@@ -419,7 +428,7 @@ export class SchemaGenerator {
     /**
      * Parse the comments of a symbol into the definition and other annotations.
      */
-    protected parseCommentsIntoDefinition(symbol: ts.Symbol, definition: OAS.Definition, otherAnnotations: {}, isOpenAPI = false): void {
+    protected parseCommentsIntoDefinition(symbol: ts.Symbol, definition: OAS.Definition, otherAnnotations: Record<string, any>, isOpenAPI = false): void {
         if (!symbol) {
             return;
         }
@@ -575,7 +584,7 @@ export class SchemaGenerator {
                         definition.patternProperties = {
                             ["^[0-9]+$"]: this.getTypeDefinition(arrayType),
                         };
-                        if (!!Array.from((<any>propertyType).members)?.find((member: [string]) => member[0] !== "__index")) {
+                        if (!!Array.from((<any>propertyType).members)?.find((member: any) => member[0] !== "__index")) {
                             this.getClassDefinition(propertyType, definition);
                         }
                     } else if (propertyType.flags & ts.TypeFlags.TemplateLiteral) {
@@ -931,8 +940,11 @@ export class SchemaGenerator {
             return !(
                 decls &&
                 decls.filter((decl) => {
-                    const mods = ts.canHaveModifiers(decl) ? ts.getModifiers(decl) : [];
-                    return mods && mods.filter((mod) => mod.kind === ts.SyntaxKind.PrivateKeyword).length > 0;
+                    // In TS >= 4.8, modifiers are queried via ts.getModifiers(); in TS 4.7, via decl.modifiers.
+                    const mods = (typeof (ts as any).getModifiers === "function" && typeof (ts as any).canHaveModifiers === "function")
+                        ? ((ts as any).canHaveModifiers(decl) ? (ts as any).getModifiers(decl) : [])
+                        : ((decl as any).modifiers || []);
+                    return mods && mods.filter((mod: any) => mod.kind === ts.SyntaxKind.PrivateKeyword).length > 0;
                 }).length > 0
             );
         });
@@ -947,7 +959,7 @@ export class SchemaGenerator {
 
             definition.oneOf = oneOf;
         } else {
-            const propertyDefinitions = props.reduce((all, prop) => {
+            const propertyDefinitions = props.reduce<Record<string, any>>((all, prop) => {
                 const propertyName = prop.getName();
                 const propDef = this.getDefinitionForProperty(prop, node);
                 if (propDef != null) {
@@ -1026,7 +1038,7 @@ export class SchemaGenerator {
     }
 
     protected unique(arr: string[]): string[] {
-        const temp = {};
+        const temp: Record<string, boolean> = {};
         for (const e of arr) {
             temp[e] = true;
         }
@@ -1200,8 +1212,8 @@ export class SchemaGenerator {
                 }
             }
             const node = symbol?.getDeclarations() !== undefined ? symbol.getDeclarations()![0] : null;
-            // Supports checking for members in remapped types like { [K in keyof X]: X[K] }
-            const members = "members" in typ ? <ts.SymbolTable>typ.members : symbol?.members;
+            // Internal compiler properties: supports checking for members in remapped types like { [K in keyof X]: X[K] }
+            const members = "members" in typ ? <ts.SymbolTable>(typ as any).members : symbol?.members;
             // console.log("getTypeDefinition");
             // console.log(definition);
             if (definition.type === undefined) {
@@ -1223,8 +1235,11 @@ export class SchemaGenerator {
                     definition.properties = {};
 
                     // Check if it is a mapped type (eg Record<keyType, valueType>)
-                    // type.indexInfos contains schemas for keys and values of mapped types
-                    const indexInfo = ("indexInfos" in typ ? (typ.indexInfos as ts.IndexInfo[]) : [])[0];
+                    // Uses public getIndexInfosOfType API where available, with safe fallback to internal indexInfos
+                    const indexInfos: readonly ts.IndexInfo[] = typeof (this.tc as any).getIndexInfosOfType === "function"
+                        ? (this.tc as any).getIndexInfosOfType(typ)
+                        : ("indexInfos" in typ ? (((typ as any).indexInfos as ts.IndexInfo[]) || []) : []);
+                    const indexInfo = indexInfos && indexInfos[0];
                     if (node && node.kind === ts.SyntaxKind.MappedType && indexInfo) {
                         definition.additionalProperties = this.getTypeDefinition(
                             indexInfo.type,
@@ -1244,7 +1259,7 @@ export class SchemaGenerator {
             this.recursiveTypeRef.delete(fullTypeName);
             // If the type was recursive (there is reffedDefinitions) - lets replace it to reference
             if (this.reffedDefinitions[fullTypeName]) {
-                const annotations = Object.entries(returnedDefinition).reduce((acc, [key, value]) => {
+                const annotations = Object.entries(returnedDefinition).reduce<Record<string, any>>((acc, [key, value]) => {
                     if (refKeywords[key] && typeof value !== undefined) {
                         acc[key] = value;
                     }

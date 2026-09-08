@@ -1,8 +1,11 @@
 {
   "name": "ts-oas",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Automatically generate OpenAPI specifications from opinionated Typescript types.",
-  "repository": "https://github.com/ts-oas/ts-oas",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ts-oas/ts-oas.git"
+  },
   "license": "MIT",
   "keywords": [
     "typescript",
@@ -48,15 +51,13 @@
     }
   },
   "bin": {
-    "ts-oas": "./bin/ts-oas"
+    "ts-oas": "bin/ts-oas"
   },
   "dependencies": {
     "fast-glob": "^3.3.3",
     "openapi-types": "^12.1.3",
+    "typescript": ">=4.7.0 <7.0.0",
     "yargs": "^17.7.2"
-  },
-  "peerDependencies": {
-    "typescript": ">=4.7 <6"
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",
@@ -71,7 +72,7 @@
     "prettier": "^2.7.1",
     "tsup": "^8.5.0",
     "tsx": "^4.20.5",
-    "typescript": "~5.8.3"
+    "typescript": "^6.0.3"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -79,6 +80,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsc -w",
-    "test": "tsx node_modules/mocha/bin/mocha -t 10000 test/**/*.test.ts"
+    "test": "tsx node_modules/mocha/bin/mocha -t 10000 test/**/*.test.ts",
+    "test:ts-matrix": "node scripts/test-ts-matrix.mjs"
   }
 }

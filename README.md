@@ -20,7 +20,7 @@ Automatically generate OpenAPI (formerly Swagger) specifications from _opinionat
 -   Supports JSDoc annotations. With both pre-defined and custom keywords, metadata can be included in every schema object.
 -   Schema processor function for any custom post-processing (if JSDoc annotations aren't enough).
 -   Generate json-schemas separately.
--   Typescript 4 and 5 compliant.
+-   Typescript 4, 5, 6, and 7 compliant.
 
 ## Install
 

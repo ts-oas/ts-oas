@@ -158,6 +158,7 @@ type TypeWithAdditionalProperties = {
     foo2: {
         bar: string;
     };
+    foo3: Record<string, number>;
 };
 export const schemaWithAdditionalProperties = {
     type: "object",
@@ -182,8 +183,15 @@ export const schemaWithAdditionalProperties = {
             },
             required: ["bar"],
         },
+        foo3: {
+            type: "object",
+            additionalProperties: {
+                type: "number",
+            },
+            properties: {},
+        },
     },
-    required: ["foo","foo2"],
+    required: ["foo", "foo2", "foo3"],
 };
 
 // ---> @ignore
@@ -265,6 +273,16 @@ export const schemaWithExample = {
         },
     },
     required: ["bar", "baz", "foo"],
+};
+
+// ---> Mapped Type / Record
+type TypeWithRecord = Record<string, number>;
+export const schemaWithRecord = {
+    type: "object",
+    properties: {},
+    additionalProperties: {
+        type: "number",
+    },
 };
 
 // TODO: add example annotations from external files

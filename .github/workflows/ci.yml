@@ -29,3 +29,37 @@ jobs:
 
       - name: Test
         run: npm test
+
+  typescript-compatibility:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    strategy:
+      fail-fast: false
+      matrix:
+        typescript-version:
+          - '4.7.4'
+          - '4.9.5'
+          - '5.0.4'
+          - '5.4.5'
+          - '5.7.3'
+          - '5.9.3'
+          - '6.0.3'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install TypeScript ${{ matrix.typescript-version }}
+        run: npm install --no-save typescript@${{ matrix.typescript-version }}
+
+      - name: Run tests with TypeScript ${{ matrix.typescript-version }}
+        run: npm test
+

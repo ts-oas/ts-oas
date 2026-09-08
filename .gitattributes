@@ -1,0 +1,14 @@
+# Auto-detect text files and normalize them to LF on checkout and commit
+* text=auto eol=lf
+
+# Explicitly guarantee LF for executable binaries and shell scripts
+bin/* text eol=lf
+*.sh text eol=lf
+
+# Binary files that should not be touched
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.tgz binary
