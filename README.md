@@ -371,7 +371,7 @@ export type AddBarAPI = ApiMapper<{
 
 > _default: false_
 
-Defines references for schemas based on their type references.
+Defines references for schemas based on their type references (recursive types are always referenced).
 
 #### `titles`
 

@@ -10,7 +10,7 @@ export type UnionModifier = "anyOf" | "oneOf";
 
 export type Options = {
     /**
-     * Uses schemas as references, corresponding to their type references.
+     * Uses schemas as references, corresponding to their type references (recursive types are always referenced).
      * @default false
      */
     ref?: boolean;

@@ -124,3 +124,16 @@ type EditBookApiWithCustomProperties = {
         timeWindow: "1m";
     };
 };
+
+type CategoryNode = {
+    name: string;
+    children: CategoryNode[];
+};
+
+type GetCategoryTreeApi = {
+    path: "/category/tree";
+    method: "GET";
+    responses: {
+        "200": CategoryNode;
+    };
+};
