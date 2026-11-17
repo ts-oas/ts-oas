@@ -436,7 +436,7 @@ export class TsOAS extends SchemaGenerator {
             spec.paths[currPath][this.getMethod(this.getTypeFromSymbol(methodSymbol)).toLowerCase()] = operation;
         }
 
-        if (this.args.ref && Object.keys(this.reffedDefinitions).length > 0) {
+        if (Object.keys(this.reffedDefinitions).length > 0) {
             if (!spec.components) spec.components = {};
 
             spec.components.schemas = {
@@ -474,7 +474,7 @@ export class TsOAS extends SchemaGenerator {
         for (const symbolName of filteredTypes) {
             root.definitions[symbolName] = this.getTypeDefinition(this.symbols[symbolName], this.args.ref);
         }
-        if (this.args.ref && Object.keys(this.reffedDefinitions).length > 0) {
+        if (Object.keys(this.reffedDefinitions).length > 0) {
             root.definitions = { ...root.definitions, ...this.reffedDefinitions };
         }
         return root.definitions;

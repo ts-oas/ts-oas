@@ -173,4 +173,26 @@ describe("openapi", () => {
         expect(spec).to.deep.equal(openApiWithCustomOperationProperties);
         await SwaggerParser.validate(spec as any, {});
     });
+
+    it("should validate against SwaggerParser with recursive types when ref is false", async () => {
+        const tsoas = new TsOAS(program);
+        const spec = tsoas.getOpenApiSpec(["GetCategoryTreeApi"]);
+
+        expect(spec.components?.schemas?.CategoryNode).to.deep.equal({
+            type: "object",
+            properties: {
+                children: {
+                    type: "array",
+                    items: {
+                        $ref: "#/components/schemas/CategoryNode",
+                    },
+                },
+                name: {
+                    type: "string",
+                },
+            },
+            required: ["children", "name"],
+        });
+        await SwaggerParser.validate(spec as any, {});
+    });
 });

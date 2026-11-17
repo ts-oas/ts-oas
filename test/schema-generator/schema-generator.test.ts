@@ -21,6 +21,7 @@ import {
     schemaWithRef,
     schemaWithTitle,
     schemaWithRecord,
+    schemaWithRecursion,
 } from "./types";
 
 const typeNames = [
@@ -37,6 +38,7 @@ const typeNames = [
     "TypeWithPattern",
     "TypeWithExample",
     "TypeWithRecord",
+    "TypeWithRecursion",
 ];
 
 const program = createProgram(["types.ts"], { strictNullChecks: true }, resolve(__dirname));
@@ -97,5 +99,9 @@ describe("schema-generator", () => {
 
     it("mapped type :: TypeWithRecord", async () => {
         expect(spec.TypeWithRecord).to.deep.equal(schemaWithRecord);
+    });
+
+    it("recursive type :: TypeWithRecursion", async () => {
+        expect(spec.TypeWithRecursion).to.deep.equal(schemaWithRecursion);
     });
 });

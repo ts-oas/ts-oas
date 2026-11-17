@@ -1,6 +1,6 @@
 {
   "name": "ts-oas",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Automatically generate OpenAPI specifications from opinionated Typescript types.",
   "repository": {
     "type": "git",
@@ -25,6 +25,7 @@
     "bin/",
     "package.json",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "sideEffects": false,

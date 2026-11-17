@@ -285,4 +285,25 @@ export const schemaWithRecord = {
     },
 };
 
+// ---> Recursive Type
+type TypeWithRecursion = {
+    name: string;
+    children: TypeWithRecursion[];
+};
+export const schemaWithRecursion = {
+    type: "object",
+    properties: {
+        children: {
+            type: "array",
+            items: {
+                $ref: "#/definitions/TypeWithRecursion",
+            },
+        },
+        name: {
+            type: "string",
+        },
+    },
+    required: ["children", "name"],
+};
+
 // TODO: add example annotations from external files
